@@ -1,0 +1,75 @@
+import { Query, Mutation, Args, Resolver } from '@nestjs/graphql';
+import { User } from './user.entity';
+import { UsersService } from './users.service';
+import { UserCreateInput } from './inputs/user.create.input';
+import { UserUpdateInput } from './inputs/user.update.input';
+
+@Resolver(() => User)
+export class UsersResolver {
+  constructor(private usersService: UsersService) {}
+
+  @Query(() => [User])
+  async users() {
+    try {
+      return this.usersService.findAll();
+    } catch (err) {
+      console.log('Error on finding all users', err);
+    }
+  }
+
+  @Query(() => User)
+  async user(@Args('id') id: string) {
+    try {
+      return this.usersService.findOne(id);
+    } catch (err) {
+      console.log('Error on finding user', err);
+    }
+  }
+
+  @Mutation(() => User)
+  async createUser(@Args('data') data: UserCreateInput) {
+    try {
+      const user = await this.usersService.create(data);
+
+      return user;
+    } catch (err) {
+      console.log('Error on creating user', err);
+    }
+  }
+
+  @Mutation(() => User)
+  async updateUser(
+    @Args('id') id: string,
+    @Args('values') values: UserUpdateInput,
+  ) {
+    try {
+      const user = await this.usersService.update(id, values);
+
+      return user;
+    } catch (err) {
+      console.log('Error on updating user', err);
+    }
+  }
+
+  @Mutation(() => String)
+  async deleteUser(@Args('id') id: string) {
+    try {
+      await this.usersService.remove(id);
+
+      return id;
+    } catch (err) {
+      console.log('Error on deleting user', err);
+    }
+  }
+
+  @Mutation(() => String)
+  async restoreUser(@Args('id') id: string) {
+    try {
+      await this.usersService.restore(id);
+
+      return id;
+    } catch (err) {
+      console.log('Error on restoring user', err);
+    }
+  }
+}
