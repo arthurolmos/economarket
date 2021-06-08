@@ -1,0 +1,71 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type User {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  email: String!
+  shoppingLists: [ShoppingList!]
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  deletedAt: DateTime!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type ShoppingList {
+  id: ID!
+  name: String
+  date: DateTime!
+  done: Boolean!
+  user: User!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  deletedAt: DateTime!
+}
+
+type Query {
+  users: [User!]!
+  user(id: String!): User!
+  shoppingLists: [ShoppingList!]!
+  shoppingList(id: String!): ShoppingList!
+}
+
+type Mutation {
+  createUser(data: UserCreateInput!): User!
+  updateUser(values: UserUpdateInput!, id: String!): User!
+  deleteUser(id: String!): String!
+  restoreUser(id: String!): String!
+  createShoppingList(userId: String!, data: ShoppingListCreateInput!): ShoppingList!
+  updateShoppingList(values: ShoppingListUpdateInput!, id: String!): ShoppingList!
+  deleteShoppingList(id: String!): String!
+  restoreShoppingList(id: String!): String!
+}
+
+input UserCreateInput {
+  firstName: String!
+  lastName: String!
+  email: String!
+  password: String!
+}
+
+input UserUpdateInput {
+  firstName: String!
+  lastName: String!
+}
+
+input ShoppingListCreateInput {
+  name: String
+  date: DateTime!
+}
+
+input ShoppingListUpdateInput {
+  name: String
+  date: DateTime
+  done: Boolean
+}

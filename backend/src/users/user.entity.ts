@@ -1,4 +1,5 @@
 import { ObjectType, Field, ID, HideField } from '@nestjs/graphql';
+import { ShoppingList } from '../shopping-list/shopping-list.entity';
 import {
   Entity,
   Column,
@@ -6,6 +7,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
+  OneToMany,
 } from 'typeorm';
 
 @Entity()
@@ -25,6 +27,11 @@ export class User {
   @Column('varchar')
   @HideField()
   password: string;
+
+  @OneToMany(() => ShoppingList, (shoppingList) => shoppingList.user, {
+    cascade: true,
+  })
+  shoppingLists?: ShoppingList[];
 
   @CreateDateColumn()
   createdAt: Date;

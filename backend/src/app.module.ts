@@ -4,6 +4,8 @@ import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './users/users.module';
 import { GraphQLModule } from '@nestjs/graphql';
+import { ShoppingListModule } from './shopping-list/shopping-list.module';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -18,9 +20,10 @@ import { GraphQLModule } from '@nestjs/graphql';
       synchronize: true,
     }),
     GraphQLModule.forRoot({
-      autoSchemaFile: true,
+      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
     }),
     UsersModule,
+    ShoppingListModule,
   ],
   controllers: [AppController],
   providers: [AppService],

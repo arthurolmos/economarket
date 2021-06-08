@@ -3,9 +3,8 @@ import { UsersService } from './users.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import * as faker from 'faker';
-import { UserCreateInput } from './inputs/user.create.input';
-import { UserUpdateInput } from './inputs/user.update.input';
-import { Repository } from 'typeorm';
+import { UserCreateInput } from './inputs/user-create.input';
+import { UserUpdateInput } from './inputs/user-update.input';
 
 describe('UsersService', () => {
   let service: UsersService;

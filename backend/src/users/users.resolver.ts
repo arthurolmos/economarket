@@ -1,15 +1,32 @@
-import { Query, Mutation, Args, Resolver } from '@nestjs/graphql';
+import {
+  Query,
+  Mutation,
+  Args,
+  Resolver,
+  ResolveField,
+  Parent,
+} from '@nestjs/graphql';
 import { User } from './user.entity';
 import { UsersService } from './users.service';
-import { UserCreateInput } from './inputs/user.create.input';
-import { UserUpdateInput } from './inputs/user.update.input';
+import { UserCreateInput } from './inputs/user-create.input';
+import { UserUpdateInput } from './inputs/user-update.input';
+import { ShoppingListService } from '../shopping-list/shopping-list.service';
 
 @Resolver(() => User)
 export class UsersResolver {
-  constructor(private usersService: UsersService) {}
+  constructor(
+    private usersService: UsersService,
+    private shoppingListService: ShoppingListService,
+  ) {}
 
-  @Query(() => [User])
-  async users() {
+  @ResolveField()
+  shoppingLists(@Parent() user) {
+    const id = user.id;
+    return this.shoppingListService.findAllByUser(id);
+  }
+
+  @Query(() => [User], { name: 'users' })
+  async getUsers() {
     try {
       return this.usersService.findAll();
     } catch (err) {
@@ -17,8 +34,8 @@ export class UsersResolver {
     }
   }
 
-  @Query(() => User)
-  async user(@Args('id') id: string) {
+  @Query(() => User, { name: 'user' })
+  async getUser(@Args('id') id: string) {
     try {
       return this.usersService.findOne(id);
     } catch (err) {
