@@ -1,5 +1,5 @@
 import { ObjectType, Field, ID, HideField } from '@nestjs/graphql';
-import { ShoppingList } from '../shopping-list/shopping-list.entity';
+import { ShoppingList } from '../shopping-lists/shopping-list.entity';
 import {
   Entity,
   Column,
@@ -17,14 +17,14 @@ export class User {
   @Field(() => ID)
   id: string;
 
-  @Column('varchar')
+  @Column()
   firstName: string;
-  @Column('varchar')
+  @Column()
   lastName: string;
-  @Column('varchar')
+  @Column()
   email: string;
 
-  @Column('varchar')
+  @Column()
   @HideField()
   password: string;
 

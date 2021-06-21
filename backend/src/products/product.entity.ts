@@ -6,36 +6,30 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
-  OneToMany,
-  ManyToOne,
-  Timestamp,
 } from 'typeorm';
-import { User } from '../users/user.entity';
 
 @Entity()
 @ObjectType()
-export class ShoppingList {
+export class Product {
   @PrimaryGeneratedColumn('uuid')
   @Field(() => ID)
   id: string;
 
-  @Column('varchar')
-  name?: string;
+  @Column()
+  name: string;
 
-  @Column('timestamptz')
-  date: Date;
-  @Column('boolean', { default: false })
-  done: boolean;
+  @Column('decimal')
+  price: number;
 
-  @ManyToOne(() => User, (user) => user.shoppingLists)
-  user: User;
+  @Column({ nullable: true })
+  brand?: string;
+
+  @Column({ nullable: true })
+  market?: string;
 
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
-
-  @DeleteDateColumn()
-  deletedAt: Date;
 }

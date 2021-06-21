@@ -18,22 +18,54 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+type ListProduct {
+  id: ID!
+  productId: ID
+  name: String!
+  quantity: Float!
+  price: Float!
+  brand: String
+  market: String
+  purchased: Boolean!
+  shoppingList: ShoppingList!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
 type ShoppingList {
   id: ID!
   name: String
   date: DateTime!
   done: Boolean!
   user: User!
+  listProducts: [ListProduct!]
   createdAt: DateTime!
   updatedAt: DateTime!
-  deletedAt: DateTime!
+}
+
+type Product {
+  id: ID!
+  name: String!
+  price: Float!
+  brand: String
+  market: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
 }
 
 type Query {
   users: [User!]!
   user(id: String!): User!
   shoppingLists: [ShoppingList!]!
+  shoppingListsByUser(userId: String!): [ShoppingList!]!
   shoppingList(id: String!): ShoppingList!
+  shoppingListByUser(userId: String!, id: String!): ShoppingList!
+  listProducts: [ListProduct!]!
+  listProductsByShoppingList(shoppingListId: String!): [ListProduct!]!
+  listProduct(id: String!): ListProduct!
+  listProductByShoppingList(id: String!, shoppingListId: String!): [ListProduct!]!
+  products: [Product!]!
+  product(id: String!): Product!
 }
 
 type Mutation {
@@ -41,10 +73,15 @@ type Mutation {
   updateUser(values: UserUpdateInput!, id: String!): User!
   deleteUser(id: String!): String!
   restoreUser(id: String!): String!
-  createShoppingList(userId: String!, data: ShoppingListCreateInput!): ShoppingList!
-  updateShoppingList(values: ShoppingListUpdateInput!, id: String!): ShoppingList!
-  deleteShoppingList(id: String!): String!
-  restoreShoppingList(id: String!): String!
+  createShoppingList(userId: String!, data: ShoppingListsCreateInput!): ShoppingList!
+  updateShoppingList(userId: String!, values: ShoppingListsUpdateInput!, id: String!): ShoppingList!
+  deleteShoppingList(userId: String!, id: String!): String!
+  createListProduct(shoppingListId: String!, data: ListProductsCreateInput!): ListProduct!
+  updateListProduct(shoppingListId: String!, values: ListProductsUpdateInput!, id: String!): ListProduct!
+  deleteListProduct(shoppingListId: String!, id: String!): String!
+  createProduct(data: ProductsCreateInput!): Product!
+  updateProduct(values: ProductsUpdateInput!, id: String!): Product!
+  deleteProduct(id: String!): String!
 }
 
 input UserCreateInput {
@@ -59,13 +96,45 @@ input UserUpdateInput {
   lastName: String!
 }
 
-input ShoppingListCreateInput {
+input ShoppingListsCreateInput {
   name: String
   date: DateTime!
 }
 
-input ShoppingListUpdateInput {
-  name: String
-  date: DateTime
-  done: Boolean
+input ShoppingListsUpdateInput {
+  name: String!
+  date: DateTime!
+  done: Boolean!
+}
+
+input ListProductsCreateInput {
+  name: String!
+  price: Float!
+  quantity: Float!
+  purchased: Boolean!
+  brand: String
+  market: String
+}
+
+input ListProductsUpdateInput {
+  name: String!
+  price: Float!
+  quantity: Float!
+  purchased: Boolean!
+  brand: String
+  market: String
+}
+
+input ProductsCreateInput {
+  name: String!
+  price: Float!
+  market: String
+  brand: String
+}
+
+input ProductsUpdateInput {
+  name: String!
+  price: Float!
+  market: String!
+  brand: String!
 }

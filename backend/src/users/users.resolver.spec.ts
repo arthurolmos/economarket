@@ -6,6 +6,8 @@ import { UsersService } from './users.service';
 import * as faker from 'faker';
 import { UserCreateInput } from './inputs/user-create.input';
 import { UserUpdateInput } from './inputs/user-update.input';
+import { ShoppingListsService } from '../shopping-lists/shopping-lists.service';
+import { ShoppingList } from '../shopping-lists/shopping-list.entity';
 
 describe('UsersResolver', () => {
   let resolver: UsersResolver;
@@ -18,6 +20,7 @@ describe('UsersResolver', () => {
     softDelete: jest.fn(),
     restore: jest.fn(),
   };
+  const mockShoppingListsRepository = {};
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -28,14 +31,21 @@ describe('UsersResolver', () => {
           provide: getRepositoryToken(User),
           useValue: mockRepository,
         },
+        ShoppingListsService,
+        {
+          provide: getRepositoryToken(ShoppingList),
+          useValue: mockShoppingListsRepository,
+        },
       ],
     }).compile();
 
     resolver = module.get<UsersResolver>(UsersResolver);
     service = module.get<UsersService>(UsersService);
+
+    jest.clearAllMocks();
   });
 
-  describe('Users', () => {
+  describe('getUsers', () => {
     const mockUsers: User[] = [];
 
     beforeAll(() => {
@@ -59,7 +69,7 @@ describe('UsersResolver', () => {
     });
   });
 
-  describe('Users', () => {
+  describe('getUsers', () => {
     const mockUser = new User();
 
     beforeAll(() => {
@@ -77,10 +87,11 @@ describe('UsersResolver', () => {
 
       expect(user).toBeDefined();
       expect(user).toEqual(mockUser);
+      expect(mockRepository.findOne).toHaveBeenCalledTimes(1);
     });
   });
 
-  describe('Create User', () => {
+  describe('createUser', () => {
     let mockData: UserCreateInput;
 
     beforeAll(() => {
@@ -104,10 +115,11 @@ describe('UsersResolver', () => {
 
       expect(user).toBeDefined();
       expect(user).toEqual(mockUser);
+      expect(mockRepository.save).toHaveBeenCalledTimes(1);
     });
   });
 
-  describe('Update User', () => {
+  describe('updateUser', () => {
     const mockUser = new User();
 
     beforeAll(() => {
@@ -133,10 +145,11 @@ describe('UsersResolver', () => {
       expect(user).toBeDefined();
       expect(user.firstName).toEqual(mockValues.firstName);
       expect(user.lastName).toEqual(mockValues.lastName);
+      expect(mockRepository.findOne).toHaveBeenCalledTimes(1);
     });
   });
 
-  describe('Remove User', () => {
+  describe('deleteUser', () => {
     const mockUser = new User();
 
     beforeAll(() => {
@@ -151,10 +164,11 @@ describe('UsersResolver', () => {
       mockRepository.softDelete.mockReturnValue(Promise.resolve());
 
       expect(await resolver.deleteUser(id)).resolves;
+      expect(mockRepository.softDelete).toHaveBeenCalledTimes(1);
     });
   });
 
-  describe('Restore User', () => {
+  describe('restoreUser', () => {
     const mockUser = new User();
 
     beforeAll(() => {
@@ -171,6 +185,8 @@ describe('UsersResolver', () => {
 
       expect(await resolver.deleteUser(id)).resolves;
       expect(await resolver.restoreUser(id)).resolves;
+      expect(mockRepository.softDelete).toHaveBeenCalledTimes(1);
+      expect(mockRepository.restore).toHaveBeenCalledTimes(1);
     });
   });
 });

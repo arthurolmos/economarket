@@ -1,8 +1,8 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ShoppingList } from './shopping-list.entity';
-import { ShoppingListService } from './shopping-list.service';
-import { ShoppingListResolver } from './shopping-list.resolver';
+import { ShoppingListsService } from './shopping-lists.service';
+import { ShoppingListsResolver } from './shopping-lists.resolver';
 import { UsersModule } from '../users/users.module';
 
 @Module({
@@ -10,7 +10,7 @@ import { UsersModule } from '../users/users.module';
     TypeOrmModule.forFeature([ShoppingList]),
     forwardRef(() => UsersModule),
   ],
-  providers: [ShoppingListService, ShoppingListResolver],
-  exports: [ShoppingListService, ShoppingListResolver],
+  providers: [ShoppingListsService, ShoppingListsResolver],
+  exports: [ShoppingListsService, ShoppingListsResolver],
 })
-export class ShoppingListModule {}
+export class ShoppingListsModule {}

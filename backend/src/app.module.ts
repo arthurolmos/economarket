@@ -4,8 +4,10 @@ import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './users/users.module';
 import { GraphQLModule } from '@nestjs/graphql';
-import { ShoppingListModule } from './shopping-list/shopping-list.module';
+import { ShoppingListsModule } from './shopping-lists/shopping-lists.module';
 import { join } from 'path';
+import { ListProductsModule } from './list-products/list-products.module';
+import { ProductsModule } from './products/products.module';
 
 @Module({
   imports: [
@@ -23,7 +25,9 @@ import { join } from 'path';
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
     }),
     UsersModule,
-    ShoppingListModule,
+    ShoppingListsModule,
+    ListProductsModule,
+    ProductsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

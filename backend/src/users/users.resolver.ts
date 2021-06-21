@@ -10,19 +10,19 @@ import { User } from './user.entity';
 import { UsersService } from './users.service';
 import { UserCreateInput } from './inputs/user-create.input';
 import { UserUpdateInput } from './inputs/user-update.input';
-import { ShoppingListService } from '../shopping-list/shopping-list.service';
+import { ShoppingListsService } from '../shopping-lists/shopping-lists.service';
 
 @Resolver(() => User)
 export class UsersResolver {
   constructor(
     private usersService: UsersService,
-    private shoppingListService: ShoppingListService,
+    private shoppingListsService: ShoppingListsService,
   ) {}
 
   @ResolveField()
   shoppingLists(@Parent() user) {
     const id = user.id;
-    return this.shoppingListService.findAllByUser(id);
+    return this.shoppingListsService.findAllByUser(id);
   }
 
   @Query(() => [User], { name: 'users' })

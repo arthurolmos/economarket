@@ -18,8 +18,6 @@ describe('UsersService', () => {
   };
 
   beforeEach(async () => {
-    jest.clearAllMocks();
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersService,
@@ -31,6 +29,8 @@ describe('UsersService', () => {
     }).compile();
 
     service = module.get<UsersService>(UsersService);
+
+    jest.clearAllMocks();
   });
 
   describe('Find All', () => {
@@ -54,6 +54,7 @@ describe('UsersService', () => {
 
       expect(users).toBeDefined();
       expect(users).toHaveLength(5);
+      expect(mockRepository.find).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -75,6 +76,7 @@ describe('UsersService', () => {
 
       expect(user).toBeDefined();
       expect(user).toEqual(mockUser);
+      expect(mockRepository.findOne).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -102,6 +104,7 @@ describe('UsersService', () => {
 
       expect(user).toBeDefined();
       expect(user).toEqual(mockUser);
+      expect(mockRepository.save).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -131,6 +134,7 @@ describe('UsersService', () => {
       expect(user).toBeDefined();
       expect(user.firstName).toEqual(mockValues.firstName);
       expect(user.lastName).toEqual(mockValues.lastName);
+      expect(mockRepository.findOne).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -149,6 +153,7 @@ describe('UsersService', () => {
       mockRepository.softDelete.mockReturnValue(Promise.resolve());
 
       expect(await service.remove(id)).resolves;
+      expect(mockRepository.softDelete).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -169,6 +174,8 @@ describe('UsersService', () => {
 
       expect(await service.remove(id)).resolves;
       expect(await service.restore(id)).resolves;
+      expect(mockRepository.softDelete).toHaveBeenCalledTimes(1);
+      expect(mockRepository.restore).toHaveBeenCalledTimes(1);
     });
   });
 });
