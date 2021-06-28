@@ -198,7 +198,7 @@ describe('ListProductsResolver', () => {
       }
     });
 
-    it('should return one List Produts by passing its ID', async () => {
+    it('should return one List Product by passing its ID', async () => {
       const id = mockListProducts[0].id;
       mockListProductsRepository.findOne.mockReturnValue(mockListProducts[0]);
 
@@ -218,6 +218,7 @@ describe('ListProductsResolver', () => {
     beforeAll(() => {
       for (let i = 0; i < 2; i++) {
         const user = new User();
+        user.id = i.toString();
         user.firstName = faker.name.firstName();
         user.lastName = faker.name.lastName();
         user.email = faker.internet.email();
@@ -251,9 +252,9 @@ describe('ListProductsResolver', () => {
     });
 
     it('should return one List Produts by passing its ID and Shopping List ID', async () => {
-      const shoppingListId = mockShoppingLists[0].id;
-      const id = mockShoppingLists[0].listProducts[0].id;
-      const product = mockShoppingLists[0].listProducts[0];
+      const shoppingListId = mockListProducts[0].shoppingList.id;
+      const id = mockListProducts[0].id;
+      const product = mockListProducts[0];
       mockListProductsRepository.findOne.mockReturnValue(product);
 
       const listProduct = await resolver.getListProductByShoppingList(
@@ -348,7 +349,7 @@ describe('ListProductsResolver', () => {
       mockListProduct.purchased = mockValues.purchased;
       mockListProduct.quantity = mockValues.quantity;
       mockListProductsRepository.findOne.mockReturnValue(mockListProduct);
-      mockListProductsRepository.update.mockReturnValue(mockListProduct);
+      mockListProductsRepository.save.mockReturnValue(mockListProduct);
 
       const listProduct = await resolver.updateListProduct(
         mockListProduct.id,
@@ -358,8 +359,8 @@ describe('ListProductsResolver', () => {
 
       expect(listProduct).toBeDefined();
       expect(listProduct).toEqual(mockListProduct);
-      expect(mockListProductsRepository.update).toHaveBeenCalledTimes(1);
-      expect(mockListProductsRepository.findOne).toHaveBeenCalledTimes(2);
+      expect(mockListProductsRepository.save).toHaveBeenCalledTimes(1);
+      expect(mockListProductsRepository.findOne).toHaveBeenCalledTimes(1);
     });
   });
 

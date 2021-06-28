@@ -97,17 +97,63 @@ export class ShoppingListsResolver {
     @Args('userId') userId: string,
   ) {
     try {
-      let shoppingList = await this.shoppingListsService.findOneByUser(
+      const shoppingList = await this.shoppingListsService.update(
         id,
+        values,
         userId,
       );
-      if (!shoppingList) throw new Error();
-
-      shoppingList = await this.shoppingListsService.update(id, values);
 
       return shoppingList;
     } catch (err) {
       console.log('Error on updating shopping list', err);
+    }
+  }
+
+  @Mutation(() => ShoppingList)
+  async shareShoppingList(
+    @Args('id') id: string,
+    @Args('userId') userId: string,
+    @Args({ name: 'sharedUsersId', type: () => [String] })
+    sharedUsersId: string[],
+  ) {
+    try {
+      const users = await this.usersService.findAllById(sharedUsersId);
+      if (!users) throw new Error();
+
+      const shoppingList =
+        await this.shoppingListsService.addSharedUsersToShoppingList(
+          id,
+          userId,
+          users,
+        );
+
+      return shoppingList;
+    } catch (err) {
+      console.log('Error on adding shared users from shopping list', err);
+    }
+  }
+
+  @Mutation(() => ShoppingList)
+  async unshareShoppingList(
+    @Args('id') id: string,
+    @Args('userId') userId: string,
+    @Args({ name: 'sharedUsersId', type: () => [String] })
+    sharedUsersId: string[],
+  ) {
+    try {
+      const users = await this.usersService.findAllById(sharedUsersId);
+      if (!users) throw new Error();
+
+      const shoppingList =
+        await this.shoppingListsService.removeSharedUsersFromShoppingList(
+          id,
+          userId,
+          users,
+        );
+
+      return shoppingList;
+    } catch (err) {
+      console.log('Error on removing shared users from shopping list', err);
     }
   }
 

@@ -22,20 +22,21 @@ export class ProductsService {
 
   async create(data: ProductsCreateInput): Promise<Product> {
     const product = new Product();
-    product.name = data.name;
-    product.price = data.price;
-    product.market = data.market && data.market;
-    product.brand = data.brand && data.brand;
+
+    Object.assign(data);
 
     return await this.productsRepository.save(product);
   }
 
   async update(id: string, values: ProductsUpdateInput): Promise<Product> {
-    const { name, price, market, brand } = values;
+    const product = await this.findOne(id);
+    if (!product) throw new Error();
 
-    await this.productsRepository.update(id, { name, price, market, brand });
+    Object.assign(values);
 
-    return await this.findOne(id);
+    await this.productsRepository.save(product);
+
+    return product;
   }
 
   async remove(id: string): Promise<void> {

@@ -11,8 +11,6 @@ import { ShoppingListsUpdateInput } from './inputs/shopping-lists-update.input';
 
 describe('ShoppingListsResolver', () => {
   let resolver: ShoppingListsResolver;
-  let shoppingListsService: ShoppingListsService;
-  let usersService: UsersService;
 
   const mockShoppingListsRepository = {
     find: jest.fn(),
@@ -49,9 +47,6 @@ describe('ShoppingListsResolver', () => {
     }).compile();
 
     resolver = module.get<ShoppingListsResolver>(ShoppingListsResolver);
-    shoppingListsService =
-      module.get<ShoppingListsService>(ShoppingListsService);
-    usersService = module.get<UsersService>(UsersService);
 
     jest.clearAllMocks();
   });
@@ -235,7 +230,7 @@ describe('ShoppingListsResolver', () => {
       mockShoppingList.date = mockValues.date;
       mockShoppingList.done = mockValues.done;
       mockShoppingListsRepository.findOne.mockReturnValue(mockShoppingList);
-      mockShoppingListsRepository.update.mockReturnValue(mockShoppingList);
+      mockShoppingListsRepository.save.mockReturnValue(mockShoppingList);
 
       const shoppingList = await resolver.updateShoppingList(
         mockShoppingList.id,
@@ -245,8 +240,101 @@ describe('ShoppingListsResolver', () => {
 
       expect(shoppingList).toBeDefined();
       expect(shoppingList).toEqual(mockShoppingList);
-      expect(mockShoppingListsRepository.update).toHaveBeenCalledTimes(1);
-      expect(mockShoppingListsRepository.findOne).toHaveBeenCalledTimes(2);
+      expect(mockShoppingListsRepository.save).toHaveBeenCalledTimes(1);
+      expect(mockShoppingListsRepository.findOne).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('shareShoppingList', () => {
+    const mockUsers: User[] = [];
+    const mockShoppingList = new ShoppingList();
+
+    beforeAll(() => {
+      for (let i = 0; i < 5; i++) {
+        const mockUser = new User();
+
+        mockUser.id = faker.datatype.uuid();
+        mockUser.firstName = faker.name.firstName();
+        mockUser.lastName = faker.name.lastName();
+        mockUser.email = faker.internet.email();
+        mockUser.password = '12345678';
+
+        mockUsers.push(mockUser);
+      }
+
+      mockShoppingList.id = faker.datatype.uuid();
+      mockShoppingList.name = faker.name.firstName();
+      mockShoppingList.date = new Date();
+      mockShoppingList.done = false;
+      mockShoppingList.user = mockUsers[0];
+    });
+
+    it('should create a new Shopping List, share it with 2 users and returns it', async () => {
+      const users = [mockUsers[2], mockUsers[3]];
+      const ids = [users[0].id, users[1].id];
+      mockShoppingList.sharedUsers = users;
+      mockUserRepository.find.mockReturnValue(users);
+      mockShoppingListsRepository.findOne.mockReturnValue(mockShoppingList);
+      mockShoppingListsRepository.save.mockReturnValue(mockShoppingList);
+
+      const shoppingList = await resolver.shareShoppingList(
+        mockShoppingList.id,
+        mockShoppingList.user.id,
+        ids,
+      );
+
+      expect(shoppingList).toBeDefined();
+      expect(shoppingList.sharedUsers.length).toEqual(2);
+      expect(mockShoppingListsRepository.save).toHaveBeenCalledTimes(1);
+      expect(mockShoppingListsRepository.findOne).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('unshareShoppingList', () => {
+    const mockUsers: User[] = [];
+    const mockShoppingList = new ShoppingList();
+
+    beforeAll(() => {
+      for (let i = 0; i < 5; i++) {
+        const mockUser = new User();
+
+        mockUser.id = faker.datatype.uuid();
+        mockUser.firstName = faker.name.firstName();
+        mockUser.lastName = faker.name.lastName();
+        mockUser.email = faker.internet.email();
+        mockUser.password = '12345678';
+
+        mockUsers.push(mockUser);
+      }
+
+      mockShoppingList.id = faker.datatype.uuid();
+      mockShoppingList.name = faker.name.firstName();
+      mockShoppingList.date = new Date();
+      mockShoppingList.done = false;
+      mockShoppingList.user = mockUsers[0];
+
+      const users = [mockUsers[2], mockUsers[3]];
+      mockShoppingList.sharedUsers = users;
+    });
+
+    it('should create a new Shopping List, share it with 2 users, remove them and returns it', async () => {
+      const users = [mockUsers[2], mockUsers[3]];
+      const ids = [users[0].id, users[1].id];
+      mockShoppingList.sharedUsers = [];
+      mockUserRepository.find.mockReturnValue(users);
+      mockShoppingListsRepository.findOne.mockReturnValue(mockShoppingList);
+      mockShoppingListsRepository.save.mockReturnValue(mockShoppingList);
+
+      const shoppingList = await resolver.unshareShoppingList(
+        mockShoppingList.id,
+        mockShoppingList.user.id,
+        ids,
+      );
+
+      expect(shoppingList).toBeDefined();
+      expect(shoppingList.sharedUsers.length).toEqual(0);
+      expect(mockShoppingListsRepository.save).toHaveBeenCalledTimes(1);
+      expect(mockShoppingListsRepository.findOne).toHaveBeenCalledTimes(1);
     });
   });
 

@@ -33,7 +33,7 @@ describe('UsersService', () => {
     jest.clearAllMocks();
   });
 
-  describe('Find All', () => {
+  describe('findAll', () => {
     const mockUsers: User[] = [];
 
     beforeAll(() => {
@@ -58,7 +58,7 @@ describe('UsersService', () => {
     });
   });
 
-  describe('Find One', () => {
+  describe('findOne', () => {
     const mockUser = new User();
 
     beforeAll(() => {
@@ -80,7 +80,29 @@ describe('UsersService', () => {
     });
   });
 
-  describe('Create User', () => {
+  describe('findOneByEmail', () => {
+    const mockUser = new User();
+
+    beforeAll(() => {
+      mockUser.id = faker.datatype.uuid();
+      mockUser.firstName = faker.name.firstName();
+      mockUser.lastName = faker.name.lastName();
+      mockUser.email = faker.internet.email();
+    });
+
+    it('should find an User by passing its Email ', async () => {
+      const email = mockUser.email;
+      mockRepository.findOne.mockReturnValue(mockUser);
+
+      const user = await service.findOne(email);
+
+      expect(user).toBeDefined();
+      expect(user).toEqual(mockUser);
+      expect(mockRepository.findOne).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('create', () => {
     let mockData: UserCreateInput;
 
     beforeAll(() => {
@@ -108,7 +130,7 @@ describe('UsersService', () => {
     });
   });
 
-  describe('Update User', () => {
+  describe('update', () => {
     const mockUser = new User();
 
     beforeAll(() => {
@@ -138,7 +160,7 @@ describe('UsersService', () => {
     });
   });
 
-  describe('Remove User', () => {
+  describe('remove', () => {
     const mockUser = new User();
 
     beforeAll(() => {
@@ -157,7 +179,7 @@ describe('UsersService', () => {
     });
   });
 
-  describe('Restore User', () => {
+  describe('restore', () => {
     const mockUser = new User();
 
     beforeAll(() => {

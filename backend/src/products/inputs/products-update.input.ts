@@ -3,14 +3,14 @@ import { InputType, Field } from '@nestjs/graphql';
 @InputType()
 export class ProductsUpdateInput {
   @Field()
-  name: string;
+  name?: string;
 
   @Field()
-  price: number;
+  price?: number;
 
   @Field()
-  market: string;
+  market?: string;
 
   @Field()
-  brand: string;
+  brand?: string;
 }

@@ -6,9 +6,10 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
-  DeleteDateColumn,
   ManyToOne,
   OneToMany,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { User } from '../users/user.entity';
 
@@ -27,12 +28,22 @@ export class ShoppingList {
   @Column('boolean', { default: false })
   done: boolean;
 
-  @ManyToOne(() => User, (user) => user.shoppingLists)
+  @ManyToOne(() => User, (user) => user.shoppingLists, {
+    // eager: true
+  })
   user: User;
+
+  @ManyToMany(() => User, {
+    nullable: true,
+    // eager: true
+  })
+  @JoinTable()
+  sharedUsers: User[];
 
   @OneToMany(() => ListProduct, (listProduct) => listProduct.shoppingList, {
     cascade: true,
     nullable: true,
+    eager: true,
   })
   listProducts?: ListProduct[];
 

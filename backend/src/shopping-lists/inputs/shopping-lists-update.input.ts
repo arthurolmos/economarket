@@ -3,11 +3,11 @@ import { InputType, Field } from '@nestjs/graphql';
 @InputType()
 export class ShoppingListsUpdateInput {
   @Field()
-  name: string;
+  name?: string;
 
   @Field()
-  date: Date;
+  date?: Date;
 
   @Field()
-  done: boolean;
+  done?: boolean;
 }

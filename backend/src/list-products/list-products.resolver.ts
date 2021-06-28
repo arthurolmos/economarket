@@ -117,13 +117,11 @@ export class ListProductsResolver {
     @Args('shoppingListId') shoppingListId: string,
   ) {
     try {
-      let listProduct = await this.listProductsService.findOneByShoppingList(
+      const listProduct = await this.listProductsService.update(
         id,
+        values,
         shoppingListId,
       );
-      if (!listProduct) throw new Error();
-
-      listProduct = await this.listProductsService.update(id, values);
 
       return listProduct;
     } catch (err) {
@@ -137,13 +135,7 @@ export class ListProductsResolver {
     @Args('shoppingListId') shoppingListId: string,
   ) {
     try {
-      const listProduct = await this.listProductsService.findOneByShoppingList(
-        id,
-        shoppingListId,
-      );
-      if (!listProduct) throw new Error();
-
-      await this.listProductsService.remove(id);
+      await this.listProductsService.remove(id, shoppingListId);
 
       return id;
     } catch (err) {

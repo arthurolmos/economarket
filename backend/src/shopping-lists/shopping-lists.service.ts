@@ -15,7 +15,7 @@ export class ShoppingListsService {
 
   findAll(): Promise<ShoppingList[]> {
     return this.shoppingListsRepository.find({
-      relations: ['user', 'listProducts'],
+      relations: ['user', 'listProducts', 'sharedUsers'],
     });
   }
 
@@ -25,14 +25,14 @@ export class ShoppingListsService {
 
   findOne(id: string): Promise<ShoppingList> {
     return this.shoppingListsRepository.findOne(id, {
-      relations: ['listProducts', 'user'],
+      relations: ['listProducts', 'user', 'sharedUsers'],
     });
   }
 
   findOneByUser(id: string, userId: string): Promise<ShoppingList> {
     return this.shoppingListsRepository.findOne({
       where: { user: userId, id },
-      relations: ['user'],
+      relations: ['user', 'sharedUsers'],
     });
   }
 
@@ -41,8 +41,8 @@ export class ShoppingListsService {
     user: User,
   ): Promise<ShoppingList> {
     const shoppingList = new ShoppingList();
-    shoppingList.name = data.name && data.name;
-    shoppingList.date = data.date;
+
+    Object.assign(shoppingList, data);
     shoppingList.user = user;
 
     return await this.shoppingListsRepository.save(shoppingList);
@@ -51,12 +51,59 @@ export class ShoppingListsService {
   async update(
     id: string,
     values: ShoppingListsUpdateInput,
+    userId: string,
   ): Promise<ShoppingList> {
-    const { name, date, done } = values;
+    const shoppingList = await this.findOneByUser(id, userId);
+    if (!shoppingList) throw new Error();
 
-    await this.shoppingListsRepository.update(id, { name, date, done });
+    Object.assign(shoppingList, values);
 
-    return await this.findOne(id);
+    await this.shoppingListsRepository.save(shoppingList);
+
+    return shoppingList;
+  }
+
+  async addSharedUsersToShoppingList(
+    id: string,
+    userId: string,
+    sharedUsers: User[],
+  ): Promise<ShoppingList> {
+    const shoppingList = await this.findOneByUser(id, userId);
+    if (!shoppingList) throw new Error();
+
+    const users = new Set(shoppingList.sharedUsers.concat(sharedUsers));
+
+    shoppingList.sharedUsers = [...users];
+
+    await this.shoppingListsRepository.save(shoppingList);
+
+    return shoppingList;
+  }
+
+  async removeSharedUsersFromShoppingList(
+    id: string,
+    userId: string,
+    sharedUsers: User[],
+  ): Promise<ShoppingList> {
+    const shoppingList = await this.findOneByUser(id, userId);
+    if (!shoppingList) throw new Error();
+
+    const ids = shoppingList.sharedUsers.map((user) => user.id);
+
+    const index = [];
+    sharedUsers.forEach((user) => {
+      const i = ids.indexOf(user.id);
+
+      index.push(i);
+    });
+
+    index.forEach((i) => {
+      shoppingList.sharedUsers.splice(i, 1);
+    });
+
+    await this.shoppingListsRepository.save(shoppingList);
+
+    return shoppingList;
   }
 
   async remove(id: string): Promise<void> {

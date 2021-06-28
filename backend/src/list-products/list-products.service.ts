@@ -14,7 +14,9 @@ export class ListProductsService {
   ) {}
 
   findAll(): Promise<ListProduct[]> {
-    return this.listProductsRepository.find({ relations: ['shoppingList'] });
+    return this.listProductsRepository.find({
+      relations: ['shoppingList'],
+    });
   }
 
   findAllByShoppingList(shoppingListId: string): Promise<ListProduct[]> {
@@ -49,12 +51,8 @@ export class ListProductsService {
     shoppingList: ShoppingList,
   ): Promise<ListProduct> {
     const listProduct = new ListProduct();
-    listProduct.name = data.name;
-    listProduct.price = data.price;
-    listProduct.quantity = data.quantity;
-    listProduct.purchased = data.purchased;
-    listProduct.brand = data.brand && data.brand;
-    listProduct.market = data.market && data.market;
+
+    Object.assign(listProduct, data);
     listProduct.shoppingList = shoppingList;
 
     return await this.listProductsRepository.save(listProduct);
@@ -63,22 +61,22 @@ export class ListProductsService {
   async update(
     id: string,
     values: ListProductsUpdateInput,
+    shoppingListId: string,
   ): Promise<ListProduct> {
-    const { name, price, quantity, purchased, brand, market } = values;
+    const listProduct = await this.findOneByShoppingList(id, shoppingListId);
+    if (!listProduct) throw new Error();
 
-    await this.listProductsRepository.update(id, {
-      name,
-      price,
-      quantity,
-      purchased,
-      brand,
-      market,
-    });
+    Object.assign(listProduct, values);
 
-    return await this.findOne(id);
+    await this.listProductsRepository.save(listProduct);
+
+    return listProduct;
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: string, shoppingListId: string): Promise<void> {
+    const listProduct = await this.findOneByShoppingList(id, shoppingListId);
+    if (!listProduct) throw new Error();
+
     await this.listProductsRepository.delete(id);
   }
 }

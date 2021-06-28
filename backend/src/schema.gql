@@ -7,6 +7,7 @@ type User {
   firstName: String!
   lastName: String!
   email: String!
+  password: String!
   shoppingLists: [ShoppingList!]
   createdAt: DateTime!
   updatedAt: DateTime!
@@ -38,6 +39,7 @@ type ShoppingList {
   date: DateTime!
   done: Boolean!
   user: User!
+  sharedUsers: [User!]!
   listProducts: [ListProduct!]
   createdAt: DateTime!
   updatedAt: DateTime!
@@ -75,6 +77,8 @@ type Mutation {
   restoreUser(id: String!): String!
   createShoppingList(userId: String!, data: ShoppingListsCreateInput!): ShoppingList!
   updateShoppingList(userId: String!, values: ShoppingListsUpdateInput!, id: String!): ShoppingList!
+  shareShoppingList(sharedUsersId: [String!]!, userId: String!, id: String!): ShoppingList!
+  unshareShoppingList(sharedUsersId: [String!]!, userId: String!, id: String!): ShoppingList!
   deleteShoppingList(userId: String!, id: String!): String!
   createListProduct(shoppingListId: String!, data: ListProductsCreateInput!): ListProduct!
   updateListProduct(shoppingListId: String!, values: ListProductsUpdateInput!, id: String!): ListProduct!
@@ -92,8 +96,8 @@ input UserCreateInput {
 }
 
 input UserUpdateInput {
-  firstName: String!
-  lastName: String!
+  firstName: String
+  lastName: String
 }
 
 input ShoppingListsCreateInput {
@@ -102,9 +106,9 @@ input ShoppingListsCreateInput {
 }
 
 input ShoppingListsUpdateInput {
-  name: String!
-  date: DateTime!
-  done: Boolean!
+  name: String
+  date: DateTime
+  done: Boolean
 }
 
 input ListProductsCreateInput {
@@ -133,8 +137,8 @@ input ProductsCreateInput {
 }
 
 input ProductsUpdateInput {
-  name: String!
-  price: Float!
-  market: String!
-  brand: String!
+  name: String
+  price: Float
+  market: String
+  brand: String
 }

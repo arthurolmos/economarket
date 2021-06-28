@@ -248,9 +248,9 @@ describe('ListProductsService', () => {
     });
 
     it('should return one List Product by passing its ID and Shopping List ID', async () => {
-      const shoppingListId = mockShoppingLists[0].id;
-      const id = mockShoppingLists[0].listProducts[0].id;
-      const product = mockShoppingLists[0].listProducts[0];
+      const shoppingListId = mockListProducts[0].shoppingList.id;
+      const id = mockListProducts[0].id;
+      const product = mockListProducts[0];
       mockListProductsRepository.findOne.mockReturnValue(product);
 
       const listProduct = await service.findOneByShoppingList(
@@ -295,14 +295,12 @@ describe('ListProductsService', () => {
       mockListProduct.quantity = mockData.quantity;
       mockListProduct.shoppingList = mockShoppingList;
       mockListProductsRepository.save.mockReturnValue(mockListProduct);
-      mockShoppingListsRepository.findOne.mockReturnValue(mockShoppingList);
 
       const listProduct = await service.create(mockData, mockShoppingList);
 
       expect(listProduct).toBeDefined();
       expect(listProduct).toEqual(mockListProduct);
       expect(mockListProductsRepository.save).toHaveBeenCalledTimes(1);
-      expect(mockShoppingListsRepository.findOne).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -318,11 +316,13 @@ describe('ListProductsService', () => {
       mockUser.email = faker.internet.email();
       mockUser.password = '12345678';
 
+      mockShoppingList.id = faker.datatype.uuid();
       mockShoppingList.name = faker.name.firstName();
       mockShoppingList.date = new Date();
 
       mockShoppingList.user = mockUser;
 
+      mockListProduct.id = faker.datatype.uuid();
       mockListProduct.name = faker.commerce.productName();
       mockListProduct.price = faker.datatype.number();
       mockListProduct.quantity = faker.datatype.number();
@@ -342,14 +342,18 @@ describe('ListProductsService', () => {
       mockListProduct.purchased = mockValues.purchased;
       mockListProduct.quantity = mockValues.quantity;
       mockListProductsRepository.findOne.mockReturnValue(mockListProduct);
-      mockListProductsRepository.update.mockReturnValue(mockListProduct);
+      mockListProductsRepository.save.mockReturnValue(mockListProduct);
 
-      const listProduct = await service.update(mockListProduct.id, mockValues);
+      const listProduct = await service.update(
+        mockListProduct.id,
+        mockValues,
+        mockShoppingList.id,
+      );
 
       expect(listProduct).toBeDefined();
       expect(listProduct).toEqual(mockListProduct);
-      expect(mockListProductsRepository.update).toHaveBeenCalledTimes(1);
-      expect(mockListProductsRepository.findOne).toHaveBeenCalledTimes(2);
+      expect(mockListProductsRepository.save).toHaveBeenCalledTimes(1);
+      expect(mockListProductsRepository.findOne).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -365,10 +369,12 @@ describe('ListProductsService', () => {
       mockUser.email = faker.internet.email();
       mockUser.password = '12345678';
 
+      mockShoppingList.id = faker.datatype.uuid();
       mockShoppingList.name = faker.name.firstName();
       mockShoppingList.date = new Date();
       mockShoppingList.user = mockUser;
 
+      mockListProduct.id = faker.datatype.uuid();
       mockListProduct.name = faker.commerce.productName();
       mockListProduct.price = faker.datatype.number();
       mockListProduct.quantity = faker.datatype.number();
@@ -377,19 +383,25 @@ describe('ListProductsService', () => {
 
     it('should delete a List Product', async () => {
       const id = mockListProduct.id;
+      const shoppingListId = mockShoppingList.id;
       mockListProductsRepository.findOne.mockReturnValue(mockListProduct);
       mockListProductsRepository.delete.mockReturnValue(Promise.resolve());
 
-      expect(await service.remove(id)).resolves;
+      expect(await service.remove(id, shoppingListId)).resolves;
       expect(mockListProductsRepository.findOne).toHaveBeenCalledTimes(1);
       expect(mockListProductsRepository.delete).toHaveBeenCalledTimes(1);
     });
 
     it('should not delete a List Product if user not found', async () => {
       const id = mockListProduct.id;
+      const shoppingListId = mockShoppingList.id;
       mockListProductsRepository.findOne.mockReturnValue(null);
 
-      expect(service.remove(id)).rejects.toThrow();
+      try {
+        service.remove(id, shoppingListId);
+      } catch (err) {
+        expect(err).toMatch('error');
+      }
       expect(mockListProductsRepository.findOne).toHaveBeenCalledTimes(1);
       expect(mockListProductsRepository.delete).toHaveBeenCalledTimes(0);
     });
