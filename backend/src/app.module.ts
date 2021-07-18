@@ -14,7 +14,11 @@ import { ConfigModule } from '@nestjs/config';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    TypeOrmModule.forRoot(),
+    TypeOrmModule.forRoot({
+      ssl: {
+        rejectUnauthorized: false,
+      },
+    }),
     GraphQLModule.forRoot({
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
     }),
