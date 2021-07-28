@@ -1,8 +1,7 @@
-import { Controller } from '@nestjs/common';
-import { Args, Mutation } from '@nestjs/graphql';
+import { Args, Mutation, Resolver } from '@nestjs/graphql';
 import { AuthService } from './auth.service';
 
-@Controller('auth')
+@Resolver()
 export class AuthResolver {
   constructor(private authService: AuthService) {}
 
