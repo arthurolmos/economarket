@@ -4,7 +4,7 @@ import { UsersModule } from '../users/users.module';
 import { PassportModule } from '@nestjs/passport';
 import { LocalStrategy } from './strategies/local.strategy';
 import { JwtModule } from '@nestjs/jwt';
-import { AuthController } from './auth.controller';
+import { AuthResolver } from './auth.resolver';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { TokenAllowListService } from './token-lists/token-allow-list.service';
 import { CacheService } from './token-lists/cache.service';
@@ -25,9 +25,9 @@ import { ConfigService } from '@nestjs/config';
     }),
     CacheModule.register(),
   ],
-  controllers: [AuthController],
   providers: [
     AuthService,
+    AuthResolver,
     LocalStrategy,
     JwtStrategy,
     // CacheService,

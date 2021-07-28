@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthController } from './auth.controller';
+import { AuthResolver } from './auth.resolver';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { User } from '../users/user.entity';
@@ -7,8 +7,9 @@ import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import * as faker from 'faker';
 
-describe('AuthController', () => {
-  let controller: AuthController;
+describe('AuthResolver', () => {
+  let resolver: AuthResolver;
+  let service: AuthService;
 
   const mockUsersRepository = {
     find: jest.fn(),
@@ -26,9 +27,9 @@ describe('AuthController', () => {
           secret: 'test-secret',
         }),
       ],
-      controllers: [AuthController],
       providers: [
         AuthService,
+        AuthResolver,
         {
           provide: UsersService,
           useClass: UsersService,
@@ -41,7 +42,8 @@ describe('AuthController', () => {
       ],
     }).compile();
 
-    controller = module.get<AuthController>(AuthController);
+    resolver = module.get<AuthResolver>(AuthResolver);
+    service = module.get<AuthService>(AuthService);
 
     jest.clearAllMocks();
   });
@@ -60,10 +62,8 @@ describe('AuthController', () => {
     });
 
     it('should login an User', async () => {
-      const request: any = {};
-      request.user = mockUser;
-
-      const token = await controller.login(request);
+      mockUsersRepository.findOne.mockReturnValue(mockUser);
+      const token = await resolver.login(mockUser.email, '12345678');
 
       expect(token).toBeDefined();
     });
