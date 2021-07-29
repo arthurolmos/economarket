@@ -2,7 +2,6 @@ import { CacheModule, Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UsersModule } from '../users/users.module';
 import { PassportModule } from '@nestjs/passport';
-import { LocalStrategy } from './strategies/local.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthResolver } from './auth.resolver';
 import { JwtStrategy } from './strategies/jwt.strategy';
@@ -18,7 +17,7 @@ import { ConfigService } from '@nestjs/config';
       useFactory: async (configService: ConfigService) => {
         return {
           secret: configService.get<string>('JWT_KEY'),
-          signOptions: { expiresIn: '60s' },
+          signOptions: { expiresIn: '1d' },
         };
       },
       inject: [ConfigService],
@@ -28,7 +27,6 @@ import { ConfigService } from '@nestjs/config';
   providers: [
     AuthService,
     AuthResolver,
-    LocalStrategy,
     JwtStrategy,
     // CacheService,
     // TokenAllowListService,

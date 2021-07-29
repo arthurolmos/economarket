@@ -55,6 +55,11 @@ type Product {
   updatedAt: DateTime!
 }
 
+type AuthResult {
+  user: User!
+  token: String!
+}
+
 type Query {
   users: [User!]!
   user(id: String!): User!
@@ -68,6 +73,7 @@ type Query {
   listProductByShoppingList(id: String!, shoppingListId: String!): [ListProduct!]!
   products: [Product!]!
   product(id: String!): Product!
+  whoAmI: User!
 }
 
 type Mutation {
@@ -86,7 +92,8 @@ type Mutation {
   createProduct(data: ProductsCreateInput!): Product!
   updateProduct(values: ProductsUpdateInput!, id: String!): Product!
   deleteProduct(id: String!): String!
-  login(password: String!, username: String!): String!
+  login(password: String!, data: String!): AuthResult!
+  register(data: UserCreateInput!): AuthResult!
 }
 
 input UserCreateInput {

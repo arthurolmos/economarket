@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '../users/user.entity';
+import { UserCreateInput } from 'src/users/inputs/user-create.input';
 import { UsersService } from '../users/users.service';
 // import { TokenAllowListService } from './token-lists/token-allow-list.service';
 
@@ -11,25 +11,53 @@ export class AuthService {
     private jwtService: JwtService, // private allowListService: TokenAllowListService,
   ) {}
 
-  async validateUser(username: string, password: string): Promise<User | null> {
-    const user = await this.usersService.findOneByEmail(username);
-    if (!user) throw new Error('User not found!');
+  async getUserById(id: string) {
+    const user = await this.usersService.findOne(id);
+    return user;
+  }
 
-    const match = await user.validatePassword(password);
-    return match ? user : null;
+  async getUserByEmail(email: string) {
+    const user = await this.usersService.findOneByEmail(email);
+    return user;
   }
 
   async login(username: string, password: string) {
-    const user = await this.validateUser(username, password);
-    if (!user) {
+    const user = await this.getUserByEmail(username);
+    if (!user) throw new Error('User not found!');
+
+    const match = await user.validatePassword(password);
+    if (!match) {
       throw new UnauthorizedException();
     }
 
     const payload = { username: user.email, sub: user.id };
 
-    const token = this.jwtService.sign(payload);
+    const token = this.generateJWTToken(payload);
 
     // await this.allowListService.add(token, user.id);
+
+    return { user, token };
+  }
+
+  async register(data: UserCreateInput) {
+    const exists = await this.getUserByEmail(data.email);
+    if (exists) throw new Error('Email already registered!');
+
+    const user = await this.usersService.create(data);
+
+    const payload = { username: user.email, sub: user.id };
+
+    const token = this.generateJWTToken(payload);
+
+    // await this.allowListService.add(token, user.id);
+
+    return { user, token };
+  }
+
+  generateJWTToken({ username, sub }: { username: string; sub: string }) {
+    const payload = { username, sub };
+
+    const token = this.jwtService.sign(payload);
 
     return token;
   }
