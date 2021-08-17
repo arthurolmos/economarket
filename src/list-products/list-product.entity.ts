@@ -40,7 +40,9 @@ export class ListProduct {
   @Field(() => ID)
   productId?: string;
 
-  @ManyToOne(() => ShoppingList, (shoppingList) => shoppingList.listProducts)
+  @ManyToOne(() => ShoppingList, (shoppingList) => shoppingList.listProducts, {
+    onDelete: 'CASCADE',
+  })
   shoppingList: ShoppingList;
 
   @OneToOne(() => User)

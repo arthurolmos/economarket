@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../users/user.entity';
-import { Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
 import { ShoppingListsCreateInput } from './inputs/shopping-lists-create.input';
 import { ShoppingListsUpdateInput } from './inputs/shopping-lists-update.input';
 import { ShoppingList } from './shopping-list.entity';
@@ -32,27 +32,30 @@ export class ShoppingListsService {
     return shoppingLists;
   }
 
-  // findAllByUser(userId: string): Promise<ShoppingList[]> {
-  //   return this.shoppingListsRepository.find({
-  //     where: [
-  //       { user: userId },
-  //       { listProducts: { id: '07d3c7b0-4893-47c6-8933-d56d40681af8' } },
-  //     ],
-  //     relations: ['user', 'listProducts', 'sharedUsers'],
-  //   });
-  // }
-
   findOne(id: string): Promise<ShoppingList> {
     return this.shoppingListsRepository.findOne(id, {
       relations: ['listProducts', 'user', 'sharedUsers'],
     });
   }
 
-  findOneByUser(id: string, userId: string): Promise<ShoppingList> {
-    return this.shoppingListsRepository.findOne({
-      where: [{ user: userId, id }],
-      relations: ['user', 'sharedUsers'],
-    });
+  async findOneByUser(id: string, userId: string): Promise<ShoppingList> {
+    const shoppingList = await this.shoppingListsRepository
+      .createQueryBuilder('shoppingList')
+      .leftJoinAndSelect('shoppingList.user', 'user')
+      .leftJoinAndSelect('shoppingList.sharedUsers', 'sharedUsers')
+      .leftJoinAndSelect('shoppingList.listProducts', 'listProducts')
+      .where('shoppingList.id = :id', { id })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('user.id = :userId', { userId }).orWhere(
+            'sharedUsers.id = :userId',
+            { userId },
+          );
+        }),
+      )
+      .getOne();
+
+    return shoppingList;
   }
 
   async create(

@@ -12,7 +12,10 @@ export class AuthResolver {
   constructor(private authService: AuthService) {}
 
   @Mutation(() => AuthResult)
-  login(@Args('username') username: string, @Args('password') password: string) {
+  login(
+    @Args('username') username: string,
+    @Args('password') password: string,
+  ) {
     return this.authService.login(username, password);
   }
 

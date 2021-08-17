@@ -36,7 +36,7 @@ type ListProduct {
 
 type ShoppingList {
   id: ID!
-  name: String
+  name: String!
   date: DateTime!
   done: Boolean!
   user: User!
@@ -86,6 +86,7 @@ type Mutation {
   updateShoppingList(userId: String!, values: ShoppingListsUpdateInput!, id: String!): ShoppingList!
   shareShoppingList(sharedUsersEmail: [String!]!, userId: String!, id: String!): ShoppingList!
   unshareShoppingList(sharedUsersId: [String!]!, userId: String!, id: String!): ShoppingList!
+  leaveSharedShoppingList(userId: String!, id: String!): String!
   deleteShoppingList(userId: String!, id: String!): String!
   createListProduct(shoppingListId: String!, data: ListProductsCreateInput!): ListProduct!
   updateListProduct(shoppingListId: String!, values: ListProductsUpdateInput!, id: String!): ListProduct!

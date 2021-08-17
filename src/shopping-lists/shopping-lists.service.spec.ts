@@ -21,7 +21,9 @@ describe('ShoppingListsService', () => {
     update: jest.fn(),
     delete: jest.fn(),
     restore: jest.fn(),
+    createQueryBuilder: jest.fn(),
   };
+
   const mockUserRepository = {
     find: jest.fn(),
     findOne: jest.fn(),
@@ -30,6 +32,7 @@ describe('ShoppingListsService', () => {
     delete: jest.fn(),
     restore: jest.fn(),
   };
+
   const mockListProductRepository = {
     find: jest.fn(),
     findOne: jest.fn(),
@@ -134,13 +137,21 @@ describe('ShoppingListsService', () => {
       const filtered = mockShoppingLists.filter(
         (shoppingList) => shoppingList.user.id === userId,
       );
-      mockShoppingListsRepository.find.mockReturnValue(filtered);
+      mockShoppingListsRepository.createQueryBuilder.mockImplementation(() => ({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orWhere: jest.fn().mockReturnThis(),
+        getMany: jest.fn(() => filtered),
+      }));
 
       const shoppingLists = await shoppingListsService.findAllByUser(userId);
 
       expect(shoppingLists).toBeDefined();
       expect(shoppingLists).toHaveLength(3);
-      expect(mockShoppingListsRepository.find).toHaveBeenCalledTimes(1);
+      expect(
+        mockShoppingListsRepository.createQueryBuilder,
+      ).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -213,13 +224,21 @@ describe('ShoppingListsService', () => {
     it('should return one Shopping Lists from User by passing Users ID and Shopping List ID', async () => {
       const id = mockShoppingLists[0].id;
       const userId = mockShoppingLists[0].user.id;
-      mockShoppingListsRepository.findOne.mockReturnValue(mockShoppingLists[0]);
+      mockShoppingListsRepository.createQueryBuilder.mockImplementation(() => ({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orWhere: jest.fn().mockReturnThis(),
+        getOne: jest.fn(() => mockShoppingLists[0]),
+      }));
 
       const shoppingList = await shoppingListsService.findOneByUser(id, userId);
 
       expect(shoppingList).toBeDefined();
       expect(shoppingList).toBe(mockShoppingLists[0]);
-      expect(mockShoppingListsRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(
+        mockShoppingListsRepository.createQueryBuilder,
+      ).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -289,6 +308,7 @@ describe('ShoppingListsService', () => {
       const shoppingList = await shoppingListsService.update(
         mockShoppingList.id,
         mockValues,
+        mockUser.id,
       );
 
       expect(shoppingList).toBeDefined();
@@ -309,7 +329,7 @@ describe('ShoppingListsService', () => {
       mockShoppingListsRepository.findOne.mockReturnValue(null);
 
       await expect(
-        shoppingListsService.update('invalidId', mockValues),
+        shoppingListsService.update('invalidId', mockValues, mockUser.id),
       ).rejects.toThrow();
       expect(mockShoppingListsRepository.findOne).toHaveBeenCalledTimes(1);
     });
@@ -342,7 +362,13 @@ describe('ShoppingListsService', () => {
     it('should create a new Shopping List, share it with 2 users and returns it', async () => {
       const users = [mockUsers[2], mockUsers[3]];
       mockShoppingList.sharedUsers = users;
-      mockShoppingListsRepository.findOne.mockReturnValue(mockShoppingList);
+      mockShoppingListsRepository.createQueryBuilder.mockImplementation(() => ({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orWhere: jest.fn().mockReturnThis(),
+        getOne: jest.fn(() => mockShoppingList),
+      }));
       mockShoppingListsRepository.save.mockReturnValue(mockShoppingList);
 
       const shoppingList =
@@ -355,13 +381,21 @@ describe('ShoppingListsService', () => {
       expect(shoppingList).toBeDefined();
       expect(shoppingList.sharedUsers.length).toEqual(2);
       expect(mockShoppingListsRepository.save).toHaveBeenCalledTimes(1);
-      expect(mockShoppingListsRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(
+        mockShoppingListsRepository.createQueryBuilder,
+      ).toHaveBeenCalledTimes(1);
     });
 
     it('should create a new Shopping List, try to share and throw an error for not finding it', async () => {
       const users = [mockUsers[2], mockUsers[3]];
       mockShoppingList.sharedUsers = users;
-      mockShoppingListsRepository.findOne.mockReturnValue(null);
+      mockShoppingListsRepository.createQueryBuilder.mockImplementation(() => ({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orWhere: jest.fn().mockReturnThis(),
+        getOne: jest.fn(() => null),
+      }));
 
       await expect(
         shoppingListsService.addSharedUsersToShoppingList(
@@ -370,7 +404,9 @@ describe('ShoppingListsService', () => {
           users,
         ),
       ).rejects.toThrow();
-      expect(mockShoppingListsRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(
+        mockShoppingListsRepository.createQueryBuilder,
+      ).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -404,7 +440,14 @@ describe('ShoppingListsService', () => {
     it('should create a new Shopping List, share it with 2 users, remove them and returns it', async () => {
       const users = [mockUsers[2], mockUsers[3]];
       mockShoppingList.sharedUsers = [];
-      mockShoppingListsRepository.findOne.mockReturnValue(mockShoppingList);
+      mockShoppingListsRepository.createQueryBuilder.mockImplementation(() => ({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orWhere: jest.fn().mockReturnThis(),
+        getOne: jest.fn(() => mockShoppingList),
+      }));
+
       mockShoppingListsRepository.save.mockReturnValue(mockShoppingList);
 
       const shoppingList =
@@ -417,13 +460,21 @@ describe('ShoppingListsService', () => {
       expect(shoppingList).toBeDefined();
       expect(shoppingList.sharedUsers.length).toEqual(0);
       expect(mockShoppingListsRepository.save).toHaveBeenCalledTimes(1);
-      expect(mockShoppingListsRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(
+        mockShoppingListsRepository.createQueryBuilder,
+      ).toHaveBeenCalledTimes(1);
     });
 
     it('should create a new Shopping List, try to share and throw an error if not find it', async () => {
       const users = [mockUsers[2], mockUsers[3]];
       mockShoppingList.sharedUsers = [];
-      mockShoppingListsRepository.findOne.mockReturnValue(null);
+      mockShoppingListsRepository.createQueryBuilder.mockImplementation(() => ({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orWhere: jest.fn().mockReturnThis(),
+        getOne: jest.fn(() => null),
+      }));
 
       await expect(
         shoppingListsService.removeSharedUsersFromShoppingList(
@@ -432,7 +483,9 @@ describe('ShoppingListsService', () => {
           users,
         ),
       ).rejects.toThrow();
-      expect(mockShoppingListsRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(
+        mockShoppingListsRepository.createQueryBuilder,
+      ).toHaveBeenCalledTimes(1);
     });
   });
 

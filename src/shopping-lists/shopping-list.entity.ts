@@ -10,6 +10,8 @@ import {
   OneToMany,
   ManyToMany,
   JoinTable,
+  BeforeInsert,
+  BeforeUpdate,
 } from 'typeorm';
 import { User } from '../users/user.entity';
 
@@ -20,8 +22,8 @@ export class ShoppingList {
   @Field(() => ID)
   id: string;
 
-  @Column({ nullable: true })
-  name?: string;
+  @Column()
+  name: string;
 
   @Column('timestamptz')
   date: Date;
@@ -33,6 +35,8 @@ export class ShoppingList {
 
   @ManyToMany(() => User, {
     nullable: true,
+    cascade: true,
+    onDelete: 'CASCADE',
   })
   @JoinTable()
   sharedUsers: User[];
@@ -41,6 +45,7 @@ export class ShoppingList {
     cascade: true,
     nullable: true,
     eager: true,
+    onDelete: 'CASCADE',
   })
   listProducts?: ListProduct[];
 

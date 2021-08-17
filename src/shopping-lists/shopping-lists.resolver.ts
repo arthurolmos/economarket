@@ -61,7 +61,7 @@ export class ShoppingListsResolver {
   }
 
   @Query(() => ShoppingList, { name: 'shoppingListByUser' })
-  async getShoppingListByUser(
+  getShoppingListByUser(
     @Args('id') id: string,
     @Args('userId') userId: string,
   ) {
@@ -151,6 +151,27 @@ export class ShoppingListsResolver {
         );
 
       return shoppingList;
+    } catch (err) {
+      console.log('Error on removing shared users from shopping list', err);
+    }
+  }
+
+  @Mutation(() => String)
+  async leaveSharedShoppingList(
+    @Args('id') id: string,
+    @Args('userId') userId: string,
+  ) {
+    try {
+      const user = await this.usersService.findOne(userId);
+      if (!user) throw new Error();
+
+      await this.shoppingListsService.removeSharedUsersFromShoppingList(
+        id,
+        userId,
+        [user],
+      );
+
+      return id;
     } catch (err) {
       console.log('Error on removing shared users from shopping list', err);
     }
