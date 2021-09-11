@@ -58,6 +58,60 @@ describe('UsersService', () => {
     });
   });
 
+  describe('findAllById', () => {
+    const mockUsers: User[] = [];
+
+    beforeAll(() => {
+      for (let i = 0; i < 5; i++) {
+        const user = new User();
+        user.id = faker.datatype.uuid();
+        user.firstName = faker.name.firstName();
+        user.lastName = faker.name.lastName();
+        user.email = faker.internet.email();
+
+        mockUsers.push(user);
+      }
+    });
+
+    it('should find two Users by passing its IDs', async () => {
+      const userIds = [mockUsers[1].id, mockUsers[3].id];
+      mockRepository.find.mockReturnValue([mockUsers[1], mockUsers[3]]);
+
+      const users = await service.findAllById(userIds);
+
+      expect(users).toBeDefined();
+      expect(users).toHaveLength(2);
+      expect(mockRepository.find).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('findAllByEmail', () => {
+    const mockUsers: User[] = [];
+
+    beforeAll(() => {
+      for (let i = 0; i < 5; i++) {
+        const user = new User();
+        user.id = faker.datatype.uuid();
+        user.firstName = faker.name.firstName();
+        user.lastName = faker.name.lastName();
+        user.email = faker.internet.email();
+
+        mockUsers.push(user);
+      }
+    });
+
+    it('should find two Users by passing its emails', async () => {
+      const userEmails = [mockUsers[1].email, mockUsers[3].email];
+      mockRepository.find.mockReturnValue([mockUsers[1], mockUsers[3]]);
+
+      const users = await service.findAllByEmail(userEmails);
+
+      expect(users).toBeDefined();
+      expect(users).toHaveLength(2);
+      expect(mockRepository.find).toHaveBeenCalledTimes(1);
+    });
+  });
+
   describe('findOne', () => {
     const mockUser = new User();
 
@@ -94,46 +148,11 @@ describe('UsersService', () => {
       const email = mockUser.email;
       mockRepository.findOne.mockReturnValue(mockUser);
 
-      const user = await service.findOne(email);
+      const user = await service.findOneByEmail(email);
 
       expect(user).toBeDefined();
       expect(user).toEqual(mockUser);
       expect(mockRepository.findOne).toHaveBeenCalledTimes(1);
-    });
-  });
-
-  describe('findAllByEmail', () => {
-    const mockUsers = [];
-
-    beforeAll(() => {
-      for (let i = 0; i < 5; i++) {
-        const mockUser = new User();
-        mockUser.id = faker.datatype.uuid();
-        mockUser.firstName = faker.name.firstName();
-        mockUser.lastName = faker.name.lastName();
-        mockUser.email = faker.internet.email();
-
-        mockUsers.push(mockUser);
-      }
-    });
-
-    it('should find all Users by passing its Email ', async () => {
-      const emails = [
-        mockUsers[0].email,
-        mockUsers[1].email,
-        mockUsers[3].email,
-      ];
-      mockRepository.find.mockReturnValue([
-        mockUsers[0],
-        mockUsers[1],
-        mockUsers[3],
-      ]);
-
-      const users = await service.findAllByEmail(emails);
-
-      expect(users).toBeDefined();
-      expect(users).toEqual([mockUsers[0], mockUsers[1], mockUsers[3]]);
-      expect(mockRepository.find).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -192,6 +211,19 @@ describe('UsersService', () => {
       expect(user.firstName).toEqual(mockValues.firstName);
       expect(user.lastName).toEqual(mockValues.lastName);
       expect(mockRepository.findOne).toHaveBeenCalledTimes(1);
+    });
+
+    it('should throw an error if User not found', async () => {
+      const mockValues: UserUpdateInput = {
+        firstName: 'A new firstname',
+        lastName: 'A new lastname',
+      };
+      mockUser.firstName = mockValues.firstName;
+      mockUser.lastName = mockValues.lastName;
+      mockRepository.findOne.mockReturnValue(null);
+      const id = 'invalidId';
+
+      await expect(service.update(id, mockValues)).rejects.toThrow();
     });
   });
 

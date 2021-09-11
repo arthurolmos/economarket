@@ -192,6 +192,41 @@ describe('ShoppingListsResolver', () => {
     });
   });
 
+  describe('getShoppingListByUser', () => {
+    const mockUser = new User();
+    const mockShoppingList = new ShoppingList();
+
+    beforeAll(() => {
+      mockUser.id = faker.datatype.uuid();
+      mockUser.firstName = faker.name.firstName();
+      mockUser.lastName = faker.name.lastName();
+      mockUser.email = faker.internet.email();
+
+      mockShoppingList.id = faker.datatype.uuid();
+      mockShoppingList.name = faker.name.firstName();
+      mockShoppingList.date = new Date();
+      mockShoppingList.user = mockUser;
+    });
+
+    it('should return one Shopping Lists by User by passing its Ids', async () => {
+      const userId = mockUser.id;
+      const id = mockShoppingList.id;
+      mockShoppingListsRepository.createQueryBuilder.mockImplementation(() => ({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        getOne: jest.fn(() => mockShoppingList),
+      }));
+
+      const shoppingList = await resolver.getShoppingListByUser(id, userId);
+
+      expect(shoppingList).toBeDefined();
+      expect(
+        mockShoppingListsRepository.createQueryBuilder,
+      ).toHaveBeenCalledTimes(1);
+    });
+  });
+
   describe('createShoppingList', () => {
     const mockUser = new User();
 
@@ -416,9 +451,12 @@ describe('ShoppingListsResolver', () => {
     it('should not delete a Shopping List if user not found', async () => {
       const id = mockShoppingList.id;
       const userId = 'another user id';
-      mockShoppingListsRepository.createQueryBuilder.mockImplementation(
-        () => null,
-      );
+      mockShoppingListsRepository.createQueryBuilder.mockImplementation(() => ({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        getOne: jest.fn(() => null),
+      }));
 
       try {
         await resolver.deleteShoppingList(id, userId);

@@ -61,7 +61,7 @@ export class ListProductsService {
     shoppingListId: string,
   ): Promise<ListProduct> {
     const listProduct = await this.findOneByShoppingList(id, shoppingListId);
-    if (!listProduct) throw new Error();
+    if (!listProduct) throw new Error('List Product not found!');
 
     Object.assign(listProduct, values);
 

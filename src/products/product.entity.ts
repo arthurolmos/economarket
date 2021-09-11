@@ -1,10 +1,12 @@
-import { ObjectType, Field, ID, InputType } from '@nestjs/graphql';
+import { ObjectType, Field, ID } from '@nestjs/graphql';
+import { User } from '../users/user.entity';
 import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
 } from 'typeorm';
 
 @Entity()
@@ -25,6 +27,9 @@ export class Product {
 
   @Column({ nullable: true })
   market?: string;
+
+  @ManyToOne(() => User, (user) => user.products, {})
+  user: User;
 
   @CreateDateColumn()
   createdAt: Date;

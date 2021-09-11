@@ -2,6 +2,34 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type Product {
+  id: ID!
+  name: String!
+  price: Float!
+  brand: String
+  market: String
+  user: User!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Notification {
+  id: ID!
+  shoppingListId: ID
+  title: String!
+  body: String!
+  read: Boolean!
+  user: User!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  deletedAt: DateTime!
+}
+
 type User {
   id: ID!
   firstName: String!
@@ -9,15 +37,12 @@ type User {
   email: String!
   password: String!
   shoppingLists: [ShoppingList!]
+  products: [Product!]
+  notifications: [Notification!]
   createdAt: DateTime!
   updatedAt: DateTime!
   deletedAt: DateTime!
 }
-
-"""
-A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
-"""
-scalar DateTime
 
 type ListProduct {
   id: ID!
@@ -46,16 +71,6 @@ type ShoppingList {
   updatedAt: DateTime!
 }
 
-type Product {
-  id: ID!
-  name: String!
-  price: Float!
-  brand: String
-  market: String
-  createdAt: DateTime!
-  updatedAt: DateTime!
-}
-
 type AuthResult {
   user: User!
   token: String!
@@ -73,8 +88,12 @@ type Query {
   listProduct(id: String!): ListProduct!
   listProductByShoppingList(id: String!, shoppingListId: String!): ListProduct!
   products: [Product!]!
+  productsByUser(userId: String!): [Product!]!
   product(id: String!): Product!
   whoAmI: User!
+  notifications: [Notification!]!
+  notificationsByUser(userId: String!): [Notification!]!
+  notification(id: String!): Notification!
 }
 
 type Mutation {
@@ -91,11 +110,17 @@ type Mutation {
   createListProduct(shoppingListId: String!, data: ListProductsCreateInput!): ListProduct!
   updateListProduct(shoppingListId: String!, values: ListProductsUpdateInput!, id: String!): ListProduct!
   deleteListProduct(shoppingListId: String!, id: String!): String!
-  createProduct(data: ProductsCreateInput!): Product!
+  createProduct(userId: String!, data: ProductsCreateInput!): Product!
   updateProduct(values: ProductsUpdateInput!, id: String!): Product!
   deleteProduct(id: String!): String!
   login(password: String!, username: String!): AuthResult!
   register(data: UserCreateInput!): AuthResult!
+  createNotification(userId: String!, data: NotificationsCreateInput!): Notification!
+  createShareShoppingListNotification(shoppingListId: String!, email: String!, userId: String!): Notification!
+  readNotification(id: String!): Notification!
+  deleteNotification(id: String!): String!
+  deleteAllNotifications: String!
+  sendNotification(data: String!, body: String!, title: String!, to: [String!]!): String!
 }
 
 input UserCreateInput {
@@ -152,4 +177,14 @@ input ProductsUpdateInput {
   price: Float
   market: String
   brand: String
+}
+
+input NotificationsCreateInput {
+  title: String!
+  body: String!
+  shoppingListId: String!
+}
+
+type Subscription {
+  notificationCreated(userId: String!): Notification!
 }

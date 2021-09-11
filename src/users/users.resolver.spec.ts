@@ -11,7 +11,7 @@ import { ShoppingList } from '../shopping-lists/shopping-list.entity';
 
 describe('UsersResolver', () => {
   let resolver: UsersResolver;
-  let service: UsersService;
+
   const mockRepository = {
     find: jest.fn(),
     findOne: jest.fn(),
@@ -40,7 +40,6 @@ describe('UsersResolver', () => {
     }).compile();
 
     resolver = module.get<UsersResolver>(UsersResolver);
-    service = module.get<UsersService>(UsersService);
 
     jest.clearAllMocks();
   });

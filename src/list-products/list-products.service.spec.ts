@@ -355,6 +355,21 @@ describe('ListProductsService', () => {
       expect(mockListProductsRepository.save).toHaveBeenCalledTimes(1);
       expect(mockListProductsRepository.findOne).toHaveBeenCalledTimes(1);
     });
+
+    it('should throw an Error if the List Product is not found', async () => {
+      const mockValues: ListProductsUpdateInput = {
+        name: faker.name.firstName(),
+        price: 123.99,
+        purchased: true,
+        quantity: 123,
+      };
+      mockListProductsRepository.findOne.mockReturnValue(null);
+
+      await expect(
+        service.update(mockListProduct.id, mockValues, mockShoppingList.id),
+      ).rejects.toThrow();
+      expect(mockListProductsRepository.findOne).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('remove', () => {

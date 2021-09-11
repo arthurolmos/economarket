@@ -6,12 +6,22 @@ import { ProductsService } from './products.service';
 import * as faker from 'faker';
 import { ProductsCreateInput } from './inputs/products-create.input';
 import { ProductsUpdateInput } from './inputs/products-update.input';
+import { UsersService } from '../users/users.service';
+import { User } from '../users/user.entity';
 
 describe('ProductsResolver', () => {
   let resolver: ProductsResolver;
-  let service: ProductsService;
 
-  const mockRepository = {
+  const mockProductsRepository = {
+    find: jest.fn(),
+    findOne: jest.fn(),
+    save: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+    restore: jest.fn(),
+  };
+
+  const mockUsersRepository = {
     find: jest.fn(),
     findOne: jest.fn(),
     save: jest.fn(),
@@ -27,13 +37,17 @@ describe('ProductsResolver', () => {
         ProductsService,
         {
           provide: getRepositoryToken(Product),
-          useValue: mockRepository,
+          useValue: mockProductsRepository,
+        },
+        UsersService,
+        {
+          provide: getRepositoryToken(User),
+          useValue: mockUsersRepository,
         },
       ],
     }).compile();
 
     resolver = module.get<ProductsResolver>(ProductsResolver);
-    service = module.get<ProductsService>(ProductsService);
 
     jest.clearAllMocks();
   });
@@ -42,6 +56,9 @@ describe('ProductsResolver', () => {
     const mockProducts: Product[] = [];
 
     beforeAll(() => {
+      const user = new User();
+      user.id = faker.datatype.uuid();
+
       for (let i = 0; i < 5; i++) {
         const product = new Product();
         product.name = faker.commerce.product();
@@ -49,17 +66,56 @@ describe('ProductsResolver', () => {
         product.market = faker.company.companyName();
         product.brand = faker.company.companyName();
 
+        product.user = user;
+
         mockProducts.push(product);
       }
     });
 
     it('should return all Products', async () => {
-      mockRepository.find.mockReturnValue(mockProducts);
+      mockProductsRepository.find.mockReturnValue(mockProducts);
 
       const products = await resolver.getProducts();
 
       expect(products).toBeDefined();
       expect(products).toHaveLength(5);
+    });
+  });
+
+  describe('getProductsByUser', () => {
+    const mockProducts: Product[] = [];
+    const users: User[] = [];
+
+    beforeAll(() => {
+      for (let i = 0; i < 2; i++) {
+        const user = new User();
+        user.id = faker.datatype.uuid();
+
+        users.push(user);
+      }
+
+      for (let i = 0; i < 5; i++) {
+        const product = new Product();
+        product.name = faker.commerce.product();
+        product.price = faker.datatype.number();
+        product.market = faker.company.companyName();
+        product.brand = faker.company.companyName();
+
+        product.user = users[i % 2];
+
+        mockProducts.push(product);
+      }
+    });
+
+    it('should return all Products by User', async () => {
+      mockProductsRepository.find.mockReturnValue(
+        mockProducts.filter((product) => product.user.id === users[1].id),
+      );
+
+      const products = await resolver.getProductsByUser(users[1].id);
+
+      expect(products).toBeDefined();
+      expect(products).toHaveLength(2);
     });
   });
 
@@ -76,20 +132,23 @@ describe('ProductsResolver', () => {
 
     it('should return an Product by passing its ID', async () => {
       const id = mockProduct.id;
-      mockRepository.findOne.mockReturnValue(mockProduct);
+      mockProductsRepository.findOne.mockReturnValue(mockProduct);
 
       const product = await resolver.getProduct(id);
 
       expect(product).toBeDefined();
       expect(product).toEqual(mockProduct);
-      expect(mockRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(mockProductsRepository.findOne).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('createProduct', () => {
     let mockData: ProductsCreateInput;
+    const user = new User();
 
     beforeAll(() => {
+      user.id = faker.datatype.uuid();
+
       mockData = {
         name: faker.commerce.product(),
         price: faker.datatype.number(),
@@ -104,13 +163,26 @@ describe('ProductsResolver', () => {
       mockProduct.price = mockData.price;
       mockProduct.market = mockData.market;
       mockProduct.brand = mockData.brand;
-      mockRepository.save.mockReturnValue(mockProduct);
+      mockProductsRepository.save.mockReturnValue(mockProduct);
+      mockUsersRepository.findOne.mockReturnValue(user);
+      const userId = user.id;
 
-      const product = await resolver.createProduct(mockData);
+      const product = await resolver.createProduct(mockData, userId);
 
       expect(product).toBeDefined();
       expect(product).toEqual(mockProduct);
-      expect(mockRepository.save).toHaveBeenCalledTimes(1);
+      expect(mockProductsRepository.save).toHaveBeenCalledTimes(1);
+    });
+
+    it('should throw an error if User not found', async () => {
+      const userId = 'invalidId';
+      mockUsersRepository.findOne.mockReturnValue(null);
+
+      try {
+        await resolver.createProduct(mockData, userId);
+      } catch (err) {
+        expect(err).toMatch('User not found!');
+      }
     });
   });
 
@@ -135,7 +207,7 @@ describe('ProductsResolver', () => {
       mockProduct.price = mockValues.price;
       mockProduct.market = mockValues.market;
       mockProduct.brand = mockValues.brand;
-      mockRepository.findOne.mockReturnValue(mockProduct);
+      mockProductsRepository.findOne.mockReturnValue(mockProduct);
       const id = mockProduct.id;
 
       const product = await resolver.updateProduct(id, mockValues);
@@ -145,7 +217,7 @@ describe('ProductsResolver', () => {
       expect(product.price).toEqual(mockValues.price);
       expect(product.market).toEqual(mockValues.market);
       expect(product.brand).toEqual(mockValues.brand);
-      expect(mockRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(mockProductsRepository.findOne).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -161,10 +233,10 @@ describe('ProductsResolver', () => {
 
     it('should delete an Product', async () => {
       const id = mockProduct.id;
-      mockRepository.delete.mockReturnValue(Promise.resolve());
+      mockProductsRepository.delete.mockReturnValue(Promise.resolve());
 
       expect(await resolver.deleteProduct(id)).resolves;
-      expect(mockRepository.delete).toHaveBeenCalledTimes(1);
+      expect(mockProductsRepository.delete).toHaveBeenCalledTimes(1);
     });
   });
 });

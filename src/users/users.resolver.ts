@@ -10,7 +10,7 @@ import { User } from './user.entity';
 import { UsersService } from './users.service';
 import { UserCreateInput } from './inputs/user-create.input';
 import { UserUpdateInput } from './inputs/user-update.input';
-import { ShoppingListsService } from 'src/shopping-lists/shopping-lists.service';
+import { ShoppingListsService } from '../shopping-lists/shopping-lists.service';
 
 @Resolver(() => User)
 export class UsersResolver {

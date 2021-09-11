@@ -271,6 +271,7 @@ describe('ListProductsResolver', () => {
   describe('createListProduct', () => {
     const mockUser = new User();
     const mockShoppingList = new ShoppingList();
+    let mockData: ListProductsCreateInput;
 
     beforeAll(() => {
       mockUser.id = faker.datatype.uuid();
@@ -283,16 +284,16 @@ describe('ListProductsResolver', () => {
       mockShoppingList.date = new Date();
 
       mockShoppingList.user = mockUser;
-    });
 
-    it('should create a new List Product and return it', async () => {
-      const mockData: ListProductsCreateInput = {
+      mockData = {
         name: faker.commerce.productName(),
         price: parseFloat(faker.commerce.price()),
         quantity: faker.datatype.number(),
         purchased: false,
       };
+    });
 
+    it('should create a new List Product and return it', async () => {
       const mockListProduct = new ListProduct();
       mockListProduct.name = mockData.name;
       mockListProduct.price = mockData.price;
@@ -310,6 +311,17 @@ describe('ListProductsResolver', () => {
       expect(listProduct).toEqual(mockListProduct);
       expect(mockListProductsRepository.save).toHaveBeenCalledTimes(1);
       expect(mockShoppingListsRepository.findOne).toHaveBeenCalledTimes(1);
+    });
+
+    it('should throw an error if Shopping List not found', async () => {
+      const userId = 'invalidId';
+      mockShoppingListsRepository.findOne.mockReturnValue(null);
+
+      try {
+        await resolver.createListProduct(mockData, userId);
+      } catch (err) {
+        expect(err).toMatch('Shopping List not found!');
+      }
     });
   });
 

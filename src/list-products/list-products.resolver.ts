@@ -76,7 +76,7 @@ export class ListProductsResolver {
       const shoppingList = await this.shoppingListsService.findOne(
         shoppingListId,
       );
-      if (!shoppingList) throw new Error();
+      if (!shoppingList) throw new Error('Shopping List not found!');
 
       const listProduct = await this.listProductsService.create(
         data,

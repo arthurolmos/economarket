@@ -11,6 +11,8 @@ import {
   BeforeInsert,
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import { Product } from '../products/product.entity';
+import { Notification } from '../notifications/notification.entity';
 
 @Entity()
 @ObjectType()
@@ -35,6 +37,20 @@ export class User {
     eager: true,
   })
   shoppingLists?: ShoppingList[];
+
+  @OneToMany(() => Product, (product) => product.user, {
+    cascade: true,
+    eager: true,
+  })
+  products?: Product[];
+
+  @OneToMany(() => Notification, (notification) => notification.user, {
+    cascade: true,
+    nullable: true,
+    eager: true,
+    onDelete: 'CASCADE',
+  })
+  notifications?: Notification[];
 
   @CreateDateColumn()
   createdAt: Date;
