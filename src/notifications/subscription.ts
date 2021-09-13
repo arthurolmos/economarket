@@ -12,6 +12,7 @@ interface RedisOptions {
   options: {
     host: string;
     port: number;
+    password: string;
     retryStrategy: (times: number) => number;
   };
 }
@@ -21,6 +22,7 @@ export const redisOptions = (): RedisOptions => {
     options: {
       host: process.env.REDIS_HOST,
       port: parseInt(process.env.REDIS_PORT),
+      password: process.env.REDIS_PASSWORD,
       retryStrategy: (times) => {
         // reconnect after
         return Math.min(times * 50, 2000);
@@ -33,8 +35,6 @@ export const redisSubscription = {
   provide: 'REDIS_PUB_SUB',
   useFactory: (configService: ConfigService) => {
     const redisOptions = configService.get<RedisOptions>('options');
-
-    console.log({ redisOptions });
 
     return new RedisPubSub({
       publisher: new Redis(redisOptions.options),
