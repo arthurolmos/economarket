@@ -9,20 +9,20 @@ import { ConfigService } from '@nestjs/config';
 // };
 
 interface RedisOptions {
-  options: {
-    host: string;
-    port: number;
-    password: string;
-    retryStrategy: (times: number) => number;
-  };
+  host: string;
+  port: number;
+  password: string;
+  url: string;
+  retryStrategy: (times: number) => number;
 }
 
-export const redisOptions = (): RedisOptions => {
+export const redisOptions = () => {
   return {
     options: {
       host: process.env.REDIS_HOST,
       port: parseInt(process.env.REDIS_PORT),
       password: process.env.REDIS_PASSWORD,
+      url: process.env.REDIS_URL,
       retryStrategy: (times) => {
         // reconnect after
         return Math.min(times * 50, 2000);
@@ -34,11 +34,16 @@ export const redisOptions = (): RedisOptions => {
 export const redisSubscription = {
   provide: 'REDIS_PUB_SUB',
   useFactory: (configService: ConfigService) => {
-    const redisOptions = configService.get<RedisOptions>('options');
+    const options = configService.get<RedisOptions>('options');
 
+    console.log(options);
     return new RedisPubSub({
-      publisher: new Redis(redisOptions.options),
-      subscriber: new Redis(redisOptions.options),
+      publisher: new Redis(options.url, {
+        retryStrategy: options.retryStrategy,
+      }),
+      subscriber: new Redis(options.url, {
+        retryStrategy: options.retryStrategy,
+      }),
     });
   },
   inject: [ConfigService],
