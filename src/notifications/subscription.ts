@@ -34,6 +34,8 @@ export const redisSubscription = {
   useFactory: (configService: ConfigService) => {
     const redisOptions = configService.get<RedisOptions>('options');
 
+    console.log({ redisOptions });
+
     return new RedisPubSub({
       publisher: new Redis(redisOptions.options),
       subscriber: new Redis(redisOptions.options),
