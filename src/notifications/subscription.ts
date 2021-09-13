@@ -1,7 +1,5 @@
 import { PubSub } from 'graphql-subscriptions';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
-import { ClientProxy } from '@nestjs/microservices';
-import { config } from '../config/redis';
 import * as Redis from 'ioredis';
 
 // export const subscription = {
