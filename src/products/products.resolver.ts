@@ -46,7 +46,6 @@ export class ProductsResolver {
   ) {
     try {
       const user = await this.usersService.findOne(userId);
-      console.log({ user });
       if (!user) throw new Error('User not found!');
 
       const product = await this.productsService.create(data, user);

@@ -5,13 +5,15 @@ import { Notification } from './notification.entity';
 import { NotificationsService } from './notifications.service';
 import { Inject } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
+import { RedisPubSub } from 'graphql-redis-subscriptions';
 
 @Resolver()
 export class NotificationsResolver {
   constructor(
     private notificationsService: NotificationsService,
     private usersService: UsersService,
-    @Inject('PUB_SUB') private pubSub: PubSub,
+    // @Inject('PUB_SUB') private pubSub: PubSub,
+    @Inject('REDIS_PUB_SUB') private redisPubSub: RedisPubSub,
   ) {}
 
   @Query(() => [Notification], { name: 'notifications' })
@@ -52,7 +54,7 @@ export class NotificationsResolver {
 
       const notification = await this.notificationsService.create(data, user);
 
-      this.pubSub.publish('notificationCreated', {
+      this.redisPubSub.publish('notificationCreated', {
         notificationCreated: notification,
       });
 
@@ -86,7 +88,7 @@ export class NotificationsResolver {
         destinatary,
       );
 
-      this.pubSub.publish('notificationCreated', {
+      this.redisPubSub.publish('notificationCreated', {
         notificationCreated: notification,
       });
 
@@ -150,6 +152,6 @@ export class NotificationsResolver {
       payload.notificationCreated.user.id === variables.userId,
   })
   notificationCreated(@Args('userId') userId: string) {
-    return this.pubSub.asyncIterator('notificationCreated');
+    return this.redisPubSub.asyncIterator('notificationCreated');
   }
 }
