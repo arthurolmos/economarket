@@ -451,7 +451,7 @@ describe('ShoppingListsService', () => {
       mockShoppingListsRepository.save.mockReturnValue(mockShoppingList);
 
       const shoppingList =
-        await shoppingListsService.removeSharedUsersFromShoppingList(
+        await shoppingListsService.deleteSharedUsersFromShoppingList(
           mockShoppingList.id,
           mockShoppingList.user.id,
           users,
@@ -477,7 +477,7 @@ describe('ShoppingListsService', () => {
       }));
 
       await expect(
-        shoppingListsService.removeSharedUsersFromShoppingList(
+        shoppingListsService.deleteSharedUsersFromShoppingList(
           'invalidId',
           mockShoppingList.user.id,
           users,
@@ -511,7 +511,7 @@ describe('ShoppingListsService', () => {
       const id = mockShoppingList.id;
       mockShoppingListsRepository.delete.mockReturnValue(Promise.resolve());
 
-      expect(shoppingListsService.remove(id)).resolves;
+      expect(shoppingListsService.delete(id)).resolves;
       expect(mockShoppingListsRepository.delete).toHaveBeenCalledTimes(1);
     });
   });

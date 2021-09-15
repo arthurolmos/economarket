@@ -402,7 +402,7 @@ describe('ListProductsService', () => {
       mockListProductsRepository.findOne.mockReturnValue(mockListProduct);
       mockListProductsRepository.delete.mockReturnValue(Promise.resolve());
 
-      expect(await service.remove(id, shoppingListId)).resolves;
+      expect(await service.delete(id, shoppingListId)).resolves;
       expect(mockListProductsRepository.findOne).toHaveBeenCalledTimes(1);
       expect(mockListProductsRepository.delete).toHaveBeenCalledTimes(1);
     });
@@ -413,7 +413,7 @@ describe('ListProductsService', () => {
       mockListProductsRepository.findOne.mockReturnValue(null);
 
       try {
-        service.remove(id, shoppingListId);
+        service.delete(id, shoppingListId);
       } catch (err) {
         expect(err).toMatch('error');
       }

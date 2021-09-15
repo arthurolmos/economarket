@@ -1,4 +1,4 @@
-import { ObjectType, Field, ID, HideField } from '@nestjs/graphql';
+import { ObjectType, Field, ID } from '@nestjs/graphql';
 import { ShoppingList } from '../shopping-lists/shopping-list.entity';
 import {
   Entity,
@@ -13,6 +13,7 @@ import {
 import * as bcrypt from 'bcrypt';
 import { Product } from '../products/product.entity';
 import { Notification } from '../notifications/notification.entity';
+import { PushNotificationToken } from '../push-notification-tokens/push-notification-token.entity';
 
 @Entity()
 @ObjectType()
@@ -51,6 +52,18 @@ export class User {
     onDelete: 'CASCADE',
   })
   notifications?: Notification[];
+
+  @OneToMany(
+    () => PushNotificationToken,
+    (pushNotificationToken) => pushNotificationToken.user,
+    {
+      cascade: true,
+      nullable: true,
+      eager: true,
+      onDelete: 'CASCADE',
+    },
+  )
+  pushNotificationTokens?: PushNotificationToken[];
 
   @CreateDateColumn()
   createdAt: Date;

@@ -241,7 +241,7 @@ describe('UsersService', () => {
       const id = mockUser.id;
       mockRepository.softDelete.mockReturnValue(Promise.resolve());
 
-      expect(await service.remove(id)).resolves;
+      expect(await service.delete(id)).resolves;
       expect(mockRepository.softDelete).toHaveBeenCalledTimes(1);
     });
   });
@@ -261,7 +261,7 @@ describe('UsersService', () => {
       mockRepository.softDelete.mockReturnValue(Promise.resolve());
       mockRepository.restore.mockReturnValue(Promise.resolve());
 
-      expect(await service.remove(id)).resolves;
+      expect(await service.delete(id)).resolves;
       expect(await service.restore(id)).resolves;
       expect(mockRepository.softDelete).toHaveBeenCalledTimes(1);
       expect(mockRepository.restore).toHaveBeenCalledTimes(1);

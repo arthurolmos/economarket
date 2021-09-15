@@ -56,11 +56,11 @@ export class NotificationsService {
     return notification;
   }
 
-  async remove(id: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     await this.notificationsRepository.delete(id);
   }
 
-  async removeAll(): Promise<void> {
+  async deleteAll(): Promise<void> {
     await this.notificationsRepository.delete({});
   }
 }

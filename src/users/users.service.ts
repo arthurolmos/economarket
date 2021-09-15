@@ -56,7 +56,7 @@ export class UsersService {
     return user;
   }
 
-  async remove(id: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     await this.usersRepository.softDelete(id);
   }
 

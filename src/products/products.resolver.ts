@@ -73,7 +73,7 @@ export class ProductsResolver {
   @Mutation(() => String)
   async deleteProduct(@Args('id') id: string) {
     try {
-      await this.productsService.remove(id);
+      await this.productsService.delete(id);
 
       return id;
     } catch (err) {

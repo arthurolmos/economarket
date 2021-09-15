@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import Expo, { ExpoPushMessage } from 'expo-server-sdk';
 
 @Injectable()
-export class ExpoService {
+export class PushNotificationManagersService {
   constructor(@Inject('EXPO_NOTIFICATION') private expo: Expo) {}
 
   async sendNotifications(messages: ExpoPushMessage[]) {

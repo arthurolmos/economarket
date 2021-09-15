@@ -30,6 +30,15 @@ type Notification {
   deletedAt: DateTime!
 }
 
+type PushNotificationToken {
+  id: ID!
+  token: String!
+  user: User!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  deletedAt: DateTime!
+}
+
 type User {
   id: ID!
   firstName: String!
@@ -39,6 +48,7 @@ type User {
   shoppingLists: [ShoppingList!]
   products: [Product!]
   notifications: [Notification!]
+  pushNotificationTokens: [PushNotificationToken!]
   createdAt: DateTime!
   updatedAt: DateTime!
   deletedAt: DateTime!
@@ -93,7 +103,9 @@ type Query {
   whoAmI: User!
   notifications: [Notification!]!
   notificationsByUser(userId: String!): [Notification!]!
-  notification(id: String!): Notification!
+  notification(id: String!): PushNotificationToken!
+  pushNotificationTokens: [PushNotificationToken!]!
+  pushNotificationTokensByUser(userId: String!): [PushNotificationToken!]!
 }
 
 type Mutation {
@@ -116,10 +128,12 @@ type Mutation {
   login(password: String!, username: String!): AuthResult!
   register(data: UserCreateInput!): AuthResult!
   createNotification(userId: String!, data: NotificationsCreateInput!): Notification!
-  createShareShoppingListNotification(shoppingListId: String!, email: String!, userId: String!): Notification!
   readNotification(id: String!): Notification!
   deleteNotification(id: String!): String!
   deleteAllNotifications: String!
+  createPushNotificationToken(userId: String!, token: String!): PushNotificationToken!
+  deletePushNotificationToken(token: String!): String!
+  deleteAllPushNotificationTokens: String!
   sendNotification(data: String!, body: String!, title: String!, to: [String!]!): String!
 }
 
@@ -182,9 +196,5 @@ input ProductsUpdateInput {
 input NotificationsCreateInput {
   title: String!
   body: String!
-  shoppingListId: String!
-}
-
-type Subscription {
-  notificationCreated(userId: String!): Notification!
+  shoppingListId: String
 }

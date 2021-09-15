@@ -70,7 +70,7 @@ export class ListProductsService {
     return listProduct;
   }
 
-  async remove(id: string, shoppingListId: string): Promise<void> {
+  async delete(id: string, shoppingListId: string): Promise<void> {
     const listProduct = await this.findOneByShoppingList(id, shoppingListId);
     if (!listProduct) throw new Error();
 

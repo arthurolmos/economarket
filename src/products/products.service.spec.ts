@@ -229,7 +229,7 @@ describe('ProductsService', () => {
       const id = mockProduct.id;
       mockProductsRepository.delete.mockReturnValue(Promise.resolve());
 
-      expect(await service.remove(id)).resolves;
+      expect(await service.delete(id)).resolves;
       expect(mockProductsRepository.delete).toHaveBeenCalledTimes(1);
     });
   });

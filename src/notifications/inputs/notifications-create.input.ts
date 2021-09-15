@@ -6,5 +6,5 @@ export class NotificationsCreateInput {
 
   body: string;
 
-  shoppingListId: string;
+  shoppingListId?: string;
 }

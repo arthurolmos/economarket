@@ -144,7 +144,7 @@ export class ShoppingListsResolver {
       if (!users) throw new Error();
 
       const shoppingList =
-        await this.shoppingListsService.removeSharedUsersFromShoppingList(
+        await this.shoppingListsService.deleteSharedUsersFromShoppingList(
           id,
           userId,
           users,
@@ -165,7 +165,7 @@ export class ShoppingListsResolver {
       const user = await this.usersService.findOne(userId);
       if (!user) throw new Error();
 
-      await this.shoppingListsService.removeSharedUsersFromShoppingList(
+      await this.shoppingListsService.deleteSharedUsersFromShoppingList(
         id,
         userId,
         [user],
@@ -189,7 +189,7 @@ export class ShoppingListsResolver {
       );
       if (!shoppingList) throw new Error();
 
-      await this.shoppingListsService.remove(id);
+      await this.shoppingListsService.delete(id);
 
       return id;
     } catch (err) {

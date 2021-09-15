@@ -3,17 +3,12 @@ import { UsersService } from '../users/users.service';
 import { NotificationsCreateInput } from './inputs/notifications-create.input';
 import { Notification } from './notification.entity';
 import { NotificationsService } from './notifications.service';
-import { Inject } from '@nestjs/common';
-import { PubSub } from 'graphql-subscriptions';
-import { RedisPubSub } from 'graphql-redis-subscriptions';
 
 @Resolver()
 export class NotificationsResolver {
   constructor(
     private notificationsService: NotificationsService,
     private usersService: UsersService,
-    // @Inject('PUB_SUB') private pubSub: PubSub,
-    @Inject('REDIS_PUB_SUB') private redisPubSub: RedisPubSub,
   ) {}
 
   @Query(() => [Notification], { name: 'notifications' })
@@ -54,49 +49,41 @@ export class NotificationsResolver {
 
       const notification = await this.notificationsService.create(data, user);
 
-      this.redisPubSub.publish('notificationCreated', {
-        notificationCreated: notification,
-      });
-
       return notification;
     } catch (err) {
       console.log('Error on creating notification', err);
     }
   }
 
-  @Mutation(() => Notification)
-  async createShareShoppingListNotification(
-    @Args('userId') userId: string,
-    @Args('email') email: string,
-    @Args('shoppingListId') shoppingListId?: string,
-  ) {
-    try {
-      const owner = await this.usersService.findOne(userId);
-      if (!owner) throw new Error('Owner not found!');
+  // @Mutation(() => Notification)
+  // async createShareShoppingListNotification(
+  //   @Args('userId') userId: string,
+  //   @Args('email') email: string,
+  //   @Args('shoppingListId') shoppingListId?: string,
+  // ) {
+  //   try {
+  //     const owner = await this.usersService.findOne(userId);
+  //     if (!owner) throw new Error('Owner not found!');
 
-      const destinatary = await this.usersService.findOneByEmail(email);
-      if (!destinatary) throw new Error('Destinatary not found!');
+  //     const destinatary = await this.usersService.findOneByEmail(email);
+  //     if (!destinatary) throw new Error('Destinatary not found!');
 
-      const data: NotificationsCreateInput = {
-        title: 'Olha só!',
-        body: `${owner.firstName} ${owner.lastName} compartilhou uma lista com você!`,
-        shoppingListId,
-      };
+  //     const data: NotificationsCreateInput = {
+  //       title: 'Olha só!',
+  //       body: `${owner.firstName} ${owner.lastName} compartilhou uma lista com você!`,
+  //       shoppingListId,
+  //     };
 
-      const notification = await this.notificationsService.create(
-        data,
-        destinatary,
-      );
+  //     const notification = await this.notificationsService.create(
+  //       data,
+  //       destinatary,
+  //     );
 
-      this.redisPubSub.publish('notificationCreated', {
-        notificationCreated: notification,
-      });
-
-      return notification;
-    } catch (err) {
-      console.log('Error on creating notification', err);
-    }
-  }
+  //     return notification;
+  //   } catch (err) {
+  //     console.log('Error on creating notification', err);
+  //   }
+  // }
 
   //   @Mutation(() => Notification)
   //   async updateNotification(
@@ -128,7 +115,7 @@ export class NotificationsResolver {
   @Mutation(() => String)
   async deleteNotification(@Args('id') id: string) {
     try {
-      await this.notificationsService.remove(id);
+      await this.notificationsService.delete(id);
 
       return id;
     } catch (err) {
@@ -139,19 +126,11 @@ export class NotificationsResolver {
   @Mutation(() => String)
   async deleteAllNotifications() {
     try {
-      await this.notificationsService.removeAll();
+      await this.notificationsService.deleteAll();
 
       return 'ok';
     } catch (err) {
       console.log('Error on deleting notification', err);
     }
-  }
-
-  @Subscription(() => Notification, {
-    filter: (payload, variables) =>
-      payload.notificationCreated.user.id === variables.userId,
-  })
-  notificationCreated(@Args('userId') userId: string) {
-    return this.redisPubSub.asyncIterator('notificationCreated');
   }
 }

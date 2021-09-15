@@ -11,7 +11,8 @@ import { ProductsModule } from './products/products.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { NotificationsModule } from './notifications/notifications.module';
-import { ExpoModule } from './expo/expo.module';
+import { PushNotificationTokensModule } from './push-notification-tokens/push-notification-tokens.module';
+import { PushNotificationManagersModule } from './push-notification-managers/push-notification-managers.module';
 
 @Module({
   imports: [
@@ -19,11 +20,6 @@ import { ExpoModule } from './expo/expo.module';
     TypeOrmModule.forRoot(),
     GraphQLModule.forRoot({
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
-      installSubscriptionHandlers: true,
-      subscriptions: {
-        'subscriptions-transport-ws': true,
-        'graphql-ws': true,
-      },
     }),
     UsersModule,
     ShoppingListsModule,
@@ -31,7 +27,8 @@ import { ExpoModule } from './expo/expo.module';
     ProductsModule,
     AuthModule,
     NotificationsModule,
-    ExpoModule,
+    PushNotificationTokensModule,
+    PushNotificationManagersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

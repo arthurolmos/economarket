@@ -114,7 +114,7 @@ export class ListProductsResolver {
     @Args('shoppingListId') shoppingListId: string,
   ) {
     try {
-      await this.listProductsService.remove(id, shoppingListId);
+      await this.listProductsService.delete(id, shoppingListId);
 
       return id;
     } catch (err) {

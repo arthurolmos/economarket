@@ -102,7 +102,7 @@ export class ShoppingListsService {
     return shoppingList;
   }
 
-  async removeSharedUsersFromShoppingList(
+  async deleteSharedUsersFromShoppingList(
     id: string,
     userId: string,
     sharedUsers: User[],
@@ -128,7 +128,7 @@ export class ShoppingListsService {
     return shoppingList;
   }
 
-  async remove(id: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     await this.shoppingListsRepository.delete(id);
   }
 }
