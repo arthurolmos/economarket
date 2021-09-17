@@ -38,7 +38,7 @@ export class ProductsService {
     const product = await this.findOne(id);
     if (!product) throw new Error();
 
-    Object.assign(values);
+    Object.assign(product, values);
 
     await this.productsRepository.save(product);
 

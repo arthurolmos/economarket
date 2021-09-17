@@ -41,13 +41,16 @@ export class NotificationsResolver {
   @Mutation(() => Notification)
   async createNotification(
     @Args('data') data: NotificationsCreateInput,
-    @Args('userId') userId: string,
+    @Args('email') email: string,
   ) {
     try {
-      const user = await this.usersService.findOne(userId);
-      if (!user) throw new Error('User not found!');
+      const destinatary = await this.usersService.findOneByEmail(email);
+      if (!destinatary) throw new Error('User not found!');
 
-      const notification = await this.notificationsService.create(data, user);
+      const notification = await this.notificationsService.create(
+        data,
+        destinatary,
+      );
 
       return notification;
     } catch (err) {

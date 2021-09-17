@@ -115,7 +115,7 @@ type Mutation {
   restoreUser(id: String!): String!
   createShoppingList(userId: String!, data: ShoppingListsCreateInput!): ShoppingList!
   updateShoppingList(userId: String!, values: ShoppingListsUpdateInput!, id: String!): ShoppingList!
-  shareShoppingList(sharedUsersEmail: [String!]!, userId: String!, id: String!): ShoppingList!
+  shareShoppingList(sharedUserId: String!, id: String!): ShoppingList!
   unshareShoppingList(sharedUsersId: [String!]!, userId: String!, id: String!): ShoppingList!
   leaveSharedShoppingList(userId: String!, id: String!): String!
   deleteShoppingList(userId: String!, id: String!): String!
@@ -127,7 +127,7 @@ type Mutation {
   deleteProduct(id: String!): String!
   login(password: String!, username: String!): AuthResult!
   register(data: UserCreateInput!): AuthResult!
-  createNotification(userId: String!, data: NotificationsCreateInput!): Notification!
+  createNotification(email: String!, data: NotificationsCreateInput!): Notification!
   readNotification(id: String!): Notification!
   deleteNotification(id: String!): String!
   deleteAllNotifications: String!

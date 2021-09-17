@@ -8,5 +8,6 @@ import { PushNotificationTokensService } from './push-notification-tokens.servic
 @Module({
   imports: [TypeOrmModule.forFeature([PushNotificationToken]), UsersModule],
   providers: [PushNotificationTokensService, PushNotificationTokensResolver],
+  exports: [PushNotificationTokensService],
 })
 export class PushNotificationTokensModule {}

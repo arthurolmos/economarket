@@ -1,5 +1,6 @@
 import { Args, Mutation, Resolver, Query } from '@nestjs/graphql';
 import { ExpoPushMessage } from 'expo-server-sdk';
+import { PushNotificationTokensService } from '../push-notification-tokens/push-notification-tokens.service';
 import { UsersService } from 'src/users/users.service';
 import { PushNotificationManagersService } from './push-notification-managers.service';
 
@@ -8,6 +9,7 @@ export class PushNotificationManagersResolver {
   constructor(
     private pushNotificationManagersService: PushNotificationManagersService,
     private usersService: UsersService,
+    private pushNotificationTokensService: PushNotificationTokensService,
   ) {}
 
   @Mutation(() => String)
@@ -23,6 +25,8 @@ export class PushNotificationManagersResolver {
       body,
       data: data ? { data } : null,
     };
+
+    // const pushNotificationToken = await this.pushNotificationTokensService.findOneByUser
 
     await this.pushNotificationManagersService.sendNotifications([message]);
 

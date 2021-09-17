@@ -87,13 +87,12 @@ export class ShoppingListsService {
 
   async addSharedUsersToShoppingList(
     id: string,
-    userId: string,
-    sharedUsers: User[],
+    sharedUser: User,
   ): Promise<ShoppingList> {
-    const shoppingList = await this.findOneByUser(id, userId);
+    const shoppingList = await this.findOne(id);
     if (!shoppingList) throw new Error();
 
-    const users = new Set(shoppingList.sharedUsers.concat(sharedUsers));
+    const users = new Set(shoppingList.sharedUsers.concat(sharedUser));
 
     shoppingList.sharedUsers = [...users];
 
@@ -101,6 +100,23 @@ export class ShoppingListsService {
 
     return shoppingList;
   }
+
+  // async addSharedUsersToShoppingList(
+  //   id: string,
+  //   userId: string,
+  //   sharedUsers: User[],
+  // ): Promise<ShoppingList> {
+  //   const shoppingList = await this.findOneByUser(id, userId);
+  //   if (!shoppingList) throw new Error();
+
+  //   const users = new Set(shoppingList.sharedUsers.concat(sharedUsers));
+
+  //   shoppingList.sharedUsers = [...users];
+
+  //   await this.shoppingListsRepository.save(shoppingList);
+
+  //   return shoppingList;
+  // }
 
   async deleteSharedUsersFromShoppingList(
     id: string,

@@ -111,20 +111,15 @@ export class ShoppingListsResolver {
   @Mutation(() => ShoppingList)
   async shareShoppingList(
     @Args('id') id: string,
-    @Args('userId') userId: string,
-    @Args({ name: 'sharedUsersEmail', type: () => [String] })
-    sharedUsersEmail: string[],
+    @Args('sharedUserId')
+    sharedUserId: string,
   ) {
     try {
-      const users = await this.usersService.findAllByEmail(sharedUsersEmail);
-      if (!users) throw new Error();
+      const user = await this.usersService.findOne(sharedUserId);
+      if (!user) throw new Error();
 
       const shoppingList =
-        await this.shoppingListsService.addSharedUsersToShoppingList(
-          id,
-          userId,
-          users,
-        );
+        await this.shoppingListsService.addSharedUsersToShoppingList(id, user);
 
       return shoppingList;
     } catch (err) {
