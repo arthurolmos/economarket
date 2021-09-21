@@ -1,11 +1,41 @@
 import { Inject, Injectable } from '@nestjs/common';
 import Expo, { ExpoPushMessage } from 'expo-server-sdk';
+import { Notification } from '../notifications/notification.entity';
+import { PushNotificationTokensService } from '../push-notification-tokens/push-notification-tokens.service';
 
 @Injectable()
 export class PushNotificationManagersService {
-  constructor(@Inject('EXPO_NOTIFICATION') private expo: Expo) {}
+  constructor(
+    @Inject('EXPO_NOTIFICATION') private expo: Expo,
+    private pushNotificationTokensService: PushNotificationTokensService,
+  ) {}
 
-  async sendNotifications(messages: ExpoPushMessage[]) {
+  async sendNotification(notification: Notification) {
+    console.log('im here');
+
+    const notificationTokens =
+      await this.pushNotificationTokensService.findAllByUser(
+        notification.user.id,
+      );
+
+    const expoTokens = [];
+    notificationTokens.forEach((notificationToken) => {
+      if (notificationToken.token) expoTokens.push(notificationToken.token);
+    });
+
+    if (notificationTokens.length > 0) {
+      const message: ExpoPushMessage = {
+        to: expoTokens,
+        title: notification.title,
+        body: notification.body,
+        data: { shoppingListId: notification.shoppingListId },
+      };
+
+      this.sendExpoNotifications([message]);
+    }
+  }
+
+  private async sendExpoNotifications(messages: ExpoPushMessage[]) {
     // The Expo push notification service accepts batches of notifications so
     // that you don't need to send 1000 requests to send 1000 notifications. We
     // recommend you batch your notifications to reduce the number of requests

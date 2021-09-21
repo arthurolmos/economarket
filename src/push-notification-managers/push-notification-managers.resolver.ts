@@ -12,26 +12,26 @@ export class PushNotificationManagersResolver {
     private pushNotificationTokensService: PushNotificationTokensService,
   ) {}
 
-  @Mutation(() => String)
-  async sendNotification(
-    @Args({ name: 'to', type: () => [String] }) to: string[],
-    @Args('title') title: string,
-    @Args('body') body: string,
-    @Args('data') data?: string,
-  ) {
-    const message: ExpoPushMessage = {
-      to,
-      title,
-      body,
-      data: data ? { data } : null,
-    };
+  // @Mutation(() => String)
+  // async sendNotification(
+  //   @Args({ name: 'to', type: () => [String] }) to: string[],
+  //   @Args('title') title: string,
+  //   @Args('body') body: string,
+  //   @Args('data') data?: string,
+  // ) {
+  //   const message: ExpoPushMessage = {
+  //     to,
+  //     title,
+  //     body,
+  //     data: data ? { data } : null,
+  //   };
 
-    // const pushNotificationToken = await this.pushNotificationTokensService.findOneByUser
+  //   // const pushNotificationToken = await this.pushNotificationTokensService.findOneByUser
 
-    await this.pushNotificationManagersService.sendNotifications([message]);
+  //   await this.pushNotificationManagersService.sendNotification(message);
 
-    return title;
-  }
+  //   return title;
+  // }
 
   // @Mutation(() => PushNotificationManager)
   // async createShareShoppingListNotification(

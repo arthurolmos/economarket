@@ -1,4 +1,5 @@
-import { Args, Mutation, Resolver, Query, Subscription } from '@nestjs/graphql';
+import { Args, Mutation, Resolver, Query } from '@nestjs/graphql';
+import { PushNotificationManagersService } from '../push-notification-managers/push-notification-managers.service';
 import { UsersService } from '../users/users.service';
 import { NotificationsCreateInput } from './inputs/notifications-create.input';
 import { Notification } from './notification.entity';
@@ -9,6 +10,7 @@ export class NotificationsResolver {
   constructor(
     private notificationsService: NotificationsService,
     private usersService: UsersService,
+    private pushNotificationManagersService: PushNotificationManagersService,
   ) {}
 
   @Query(() => [Notification], { name: 'notifications' })
@@ -52,6 +54,8 @@ export class NotificationsResolver {
         destinatary,
       );
 
+      this.pushNotificationManagersService.sendNotification(notification);
+
       return notification;
     } catch (err) {
       console.log('Error on creating notification', err);
@@ -87,20 +91,6 @@ export class NotificationsResolver {
   //     console.log('Error on creating notification', err);
   //   }
   // }
-
-  //   @Mutation(() => Notification)
-  //   async updateNotification(
-  //     @Args('id') id: string,
-  //     @Args('values') values: NotificationsUpdateInput,
-  //   ) {
-  //     try {
-  //       const notification = await this.notificationsService.update(id, values);
-
-  //       return notification;
-  //     } catch (err) {
-  //       console.log('Error on updating notification', err);
-  //     }
-  //   }
 
   @Mutation(() => Notification)
   async readNotification(@Args('id') id: string) {

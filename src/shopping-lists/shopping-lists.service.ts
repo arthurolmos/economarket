@@ -27,6 +27,7 @@ export class ShoppingListsService {
       .leftJoinAndSelect('shoppingList.listProducts', 'listProducts')
       .where('user.id = :id', { id: userId })
       .orWhere('sharedUsers.id = :id', { id: userId })
+      .orderBy('date', 'DESC')
       .getMany();
 
     return shoppingLists;
@@ -53,6 +54,7 @@ export class ShoppingListsService {
           );
         }),
       )
+      .orderBy('date', 'DESC')
       .getOne();
 
     return shoppingList;
@@ -100,23 +102,6 @@ export class ShoppingListsService {
 
     return shoppingList;
   }
-
-  // async addSharedUsersToShoppingList(
-  //   id: string,
-  //   userId: string,
-  //   sharedUsers: User[],
-  // ): Promise<ShoppingList> {
-  //   const shoppingList = await this.findOneByUser(id, userId);
-  //   if (!shoppingList) throw new Error();
-
-  //   const users = new Set(shoppingList.sharedUsers.concat(sharedUsers));
-
-  //   shoppingList.sharedUsers = [...users];
-
-  //   await this.shoppingListsRepository.save(shoppingList);
-
-  //   return shoppingList;
-  // }
 
   async deleteSharedUsersFromShoppingList(
     id: string,

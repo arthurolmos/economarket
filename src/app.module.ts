@@ -13,6 +13,7 @@ import { ConfigModule } from '@nestjs/config';
 import { NotificationsModule } from './notifications/notifications.module';
 import { PushNotificationTokensModule } from './push-notification-tokens/push-notification-tokens.module';
 import { PushNotificationManagersModule } from './push-notification-managers/push-notification-managers.module';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { PushNotificationManagersModule } from './push-notification-managers/pus
     NotificationsModule,
     PushNotificationTokensModule,
     PushNotificationManagersModule,
+    CommonModule,
   ],
   controllers: [AppController],
   providers: [AppService],

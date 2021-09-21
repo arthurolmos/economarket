@@ -142,6 +142,7 @@ describe('ShoppingListsService', () => {
         where: jest.fn().mockReturnThis(),
         andWhere: jest.fn().mockReturnThis(),
         orWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
         getMany: jest.fn(() => filtered),
       }));
 
@@ -229,6 +230,7 @@ describe('ShoppingListsService', () => {
         where: jest.fn().mockReturnThis(),
         andWhere: jest.fn().mockReturnThis(),
         orWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
         getOne: jest.fn(() => mockShoppingLists[0]),
       }));
 
@@ -359,54 +361,33 @@ describe('ShoppingListsService', () => {
       mockShoppingList.user = mockUsers[0];
     });
 
-    it('should create a new Shopping List, share it with 2 users and returns it', async () => {
-      const users = [mockUsers[2], mockUsers[3]];
-      mockShoppingList.sharedUsers = users;
-      mockShoppingListsRepository.createQueryBuilder.mockImplementation(() => ({
-        leftJoinAndSelect: jest.fn().mockReturnThis(),
-        where: jest.fn().mockReturnThis(),
-        andWhere: jest.fn().mockReturnThis(),
-        orWhere: jest.fn().mockReturnThis(),
-        getOne: jest.fn(() => mockShoppingList),
-      }));
+    it('should create a new Shopping List, share it with an user and return it', async () => {
+      const user = mockUsers[2];
+      mockShoppingList.sharedUsers = [user];
+      mockShoppingListsRepository.findOne.mockReturnValue(mockShoppingList);
       mockShoppingListsRepository.save.mockReturnValue(mockShoppingList);
 
       const shoppingList =
         await shoppingListsService.addSharedUsersToShoppingList(
           mockShoppingList.id,
-          mockShoppingList.user.id,
-          users,
+          user,
         );
 
       expect(shoppingList).toBeDefined();
-      expect(shoppingList.sharedUsers.length).toEqual(2);
+      expect(shoppingList.sharedUsers.length).toEqual(1);
       expect(mockShoppingListsRepository.save).toHaveBeenCalledTimes(1);
-      expect(
-        mockShoppingListsRepository.createQueryBuilder,
-      ).toHaveBeenCalledTimes(1);
+      expect(mockShoppingListsRepository.findOne).toHaveBeenCalledTimes(1);
     });
 
     it('should create a new Shopping List, try to share and throw an error for not finding it', async () => {
-      const users = [mockUsers[2], mockUsers[3]];
-      mockShoppingList.sharedUsers = users;
-      mockShoppingListsRepository.createQueryBuilder.mockImplementation(() => ({
-        leftJoinAndSelect: jest.fn().mockReturnThis(),
-        where: jest.fn().mockReturnThis(),
-        andWhere: jest.fn().mockReturnThis(),
-        orWhere: jest.fn().mockReturnThis(),
-        getOne: jest.fn(() => null),
-      }));
+      const user = mockUsers[2];
+      mockShoppingList.sharedUsers = [user];
+      mockShoppingListsRepository.findOne.mockReturnValue(null);
 
       await expect(
-        shoppingListsService.addSharedUsersToShoppingList(
-          'invalidId',
-          mockShoppingList.user.id,
-          users,
-        ),
+        shoppingListsService.addSharedUsersToShoppingList('invalidId', user),
       ).rejects.toThrow();
-      expect(
-        mockShoppingListsRepository.createQueryBuilder,
-      ).toHaveBeenCalledTimes(1);
+      expect(mockShoppingListsRepository.findOne).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -445,6 +426,7 @@ describe('ShoppingListsService', () => {
         where: jest.fn().mockReturnThis(),
         andWhere: jest.fn().mockReturnThis(),
         orWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
         getOne: jest.fn(() => mockShoppingList),
       }));
 
@@ -473,6 +455,7 @@ describe('ShoppingListsService', () => {
         where: jest.fn().mockReturnThis(),
         andWhere: jest.fn().mockReturnThis(),
         orWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
         getOne: jest.fn(() => null),
       }));
 

@@ -1,4 +1,4 @@
-import { ObjectType, Field, ID } from '@nestjs/graphql';
+import { ObjectType, Field, ID, HideField } from '@nestjs/graphql';
 import { ShoppingList } from '../shopping-lists/shopping-list.entity';
 import {
   Entity,
@@ -30,7 +30,7 @@ export class User {
   email: string;
 
   @Column()
-  // @HideField()
+  @HideField()
   password: string;
 
   @OneToMany(() => ShoppingList, (shoppingList) => shoppingList.user, {

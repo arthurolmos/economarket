@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PushNotificationManagersService } from './push-notification-manager.service';
+import { PushNotificationManagersService } from './push-notification-managers.service';
 
 describe('PushNotificationManagersService', () => {
   let service: PushNotificationManagersService;

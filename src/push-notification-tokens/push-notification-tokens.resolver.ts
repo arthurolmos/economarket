@@ -1,5 +1,5 @@
 import { Args, Mutation, Resolver, Query } from '@nestjs/graphql';
-import { UsersService } from 'src/users/users.service';
+import { UsersService } from '../users/users.service';
 import { PushNotificationToken } from './push-notification-token.entity';
 import { PushNotificationTokensService } from './push-notification-tokens.service';
 

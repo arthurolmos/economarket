@@ -27,6 +27,7 @@ export class ShoppingList {
 
   @Column('timestamptz')
   date: Date;
+
   @Column('boolean', { default: false })
   done: boolean;
 

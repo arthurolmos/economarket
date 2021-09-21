@@ -329,23 +329,23 @@ describe('ShoppingListsResolver', () => {
       mockShoppingList.user = mockUsers[0];
     });
 
-    it('should create a new Shopping List, share it with 2 users and returns it', async () => {
-      const users = [mockUsers[2], mockUsers[3]];
-      const emails = [users[0].email, users[1].email];
-      mockShoppingList.sharedUsers = users;
-      mockUserRepository.find.mockReturnValue(users);
+    it('should create a new Shopping List, share it with an user and return it', async () => {
+      const user = mockUsers[1];
+      const userId = user.id;
+      mockShoppingList.sharedUsers = [user];
+      mockUserRepository.findOne.mockReturnValue(userId);
       mockShoppingListsRepository.createQueryBuilder.mockImplementation(() => ({
         leftJoinAndSelect: jest.fn().mockReturnThis(),
         where: jest.fn().mockReturnThis(),
         andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
         getOne: jest.fn(() => mockShoppingList),
       }));
       mockShoppingListsRepository.save.mockReturnValue(mockShoppingList);
 
       const shoppingList = await resolver.shareShoppingList(
         mockShoppingList.id,
-        mockShoppingList.user.id,
-        emails,
+        userId,
       );
 
       expect(shoppingList).toBeDefined();
@@ -393,6 +393,7 @@ describe('ShoppingListsResolver', () => {
         leftJoinAndSelect: jest.fn().mockReturnThis(),
         where: jest.fn().mockReturnThis(),
         andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
         getOne: jest.fn(() => mockShoppingList),
       }));
       mockShoppingListsRepository.save.mockReturnValue(mockShoppingList);
@@ -437,6 +438,7 @@ describe('ShoppingListsResolver', () => {
         leftJoinAndSelect: jest.fn().mockReturnThis(),
         where: jest.fn().mockReturnThis(),
         andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
         getOne: jest.fn(() => mockShoppingList),
       }));
       mockShoppingListsRepository.delete.mockReturnValue(Promise.resolve());
@@ -455,6 +457,7 @@ describe('ShoppingListsResolver', () => {
         leftJoinAndSelect: jest.fn().mockReturnThis(),
         where: jest.fn().mockReturnThis(),
         andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
         getOne: jest.fn(() => null),
       }));
 
@@ -496,7 +499,7 @@ describe('ShoppingListsResolver', () => {
 
     it('should create a new Shopping List, and share it with an user, remove the user, and return it', async () => {
       const user = mockUsers[2];
-      const email = user.email;
+      const userId = user.id;
       mockShoppingList.sharedUsers = [user];
       mockUserRepository.find.mockReturnValue(user);
       mockUserRepository.findOne.mockReturnValue(user);
@@ -504,14 +507,14 @@ describe('ShoppingListsResolver', () => {
         leftJoinAndSelect: jest.fn().mockReturnThis(),
         where: jest.fn().mockReturnThis(),
         andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
         getOne: jest.fn(() => mockShoppingList),
       }));
       mockShoppingListsRepository.save.mockReturnValue(mockShoppingList);
 
       const shoppingList = await resolver.shareShoppingList(
         mockShoppingList.id,
-        mockShoppingList.user.id,
-        [email],
+        userId,
       );
 
       await resolver.leaveSharedShoppingList(mockShoppingList.id, user.id);

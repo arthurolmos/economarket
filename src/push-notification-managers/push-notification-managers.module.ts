@@ -12,6 +12,6 @@ import { PushNotificationManagersService } from './push-notification-managers.se
     PushNotificationManagersService,
     PushNotificationManagersResolver,
   ],
-  exports: [...expo],
+  exports: [PushNotificationManagersService],
 })
 export class PushNotificationManagersModule {}
