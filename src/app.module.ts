@@ -14,6 +14,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { PushNotificationTokensModule } from './push-notification-tokens/push-notification-tokens.module';
 import { PushNotificationManagersModule } from './push-notification-managers/push-notification-managers.module';
 import { CommonModule } from './common/common.module';
+import { WebScrapingModule } from './web-scraping/web-scraping.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { CommonModule } from './common/common.module';
     PushNotificationTokensModule,
     PushNotificationManagersModule,
     CommonModule,
+    WebScrapingModule,
   ],
   controllers: [AppController],
   providers: [AppService],

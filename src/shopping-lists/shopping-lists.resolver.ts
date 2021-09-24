@@ -109,6 +109,24 @@ export class ShoppingListsResolver {
   }
 
   @Mutation(() => ShoppingList)
+  async finishShoppingList(
+    @Args('id') id: string,
+    @Args('userId') userId: string,
+  ) {
+    try {
+      const shoppingList = await this.shoppingListsService.update(
+        id,
+        { done: true },
+        userId,
+      );
+
+      return shoppingList;
+    } catch (err) {
+      console.log('Error on updating shopping list', err);
+    }
+  }
+
+  @Mutation(() => ShoppingList)
   async shareShoppingList(
     @Args('id') id: string,
     @Args('sharedUserId')

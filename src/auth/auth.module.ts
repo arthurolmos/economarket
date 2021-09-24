@@ -16,7 +16,6 @@ import { ConfigService } from '@nestjs/config';
     JwtModule.registerAsync({
       useFactory: async (configService: ConfigService) => {
         const secret = configService.get<string>('JWT_KEY');
-        console.log({ secret });
 
         return {
           secret: configService.get<string>('JWT_KEY'),
