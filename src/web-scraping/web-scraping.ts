@@ -4,8 +4,7 @@ import * as puppeteer from 'puppeteer';
 @Injectable()
 export class WebScraping implements OnModuleInit {
   onModuleInit() {
-    console.log('scrap');
-    this.scrap();
+    // this.scrap();
   }
 
   scrap = async () => {
