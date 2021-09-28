@@ -37,20 +37,17 @@ export class User {
 
   @OneToMany(() => ShoppingList, (shoppingList) => shoppingList.user, {
     cascade: true,
-    eager: true,
   })
   shoppingLists?: ShoppingList[];
 
   @OneToMany(() => Product, (product) => product.user, {
     cascade: true,
-    eager: true,
   })
   products?: Product[];
 
   @OneToMany(() => Notification, (notification) => notification.user, {
     cascade: true,
     nullable: true,
-    eager: true,
     onDelete: 'CASCADE',
   })
   notifications?: Notification[];
@@ -61,7 +58,6 @@ export class User {
     {
       cascade: true,
       nullable: true,
-      eager: true,
       onDelete: 'CASCADE',
     },
   )
