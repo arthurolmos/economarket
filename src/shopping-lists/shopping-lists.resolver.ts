@@ -61,12 +61,10 @@ export class ShoppingListsResolver {
   }
 
   @Query(() => ShoppingList, { name: 'shoppingListByUser' })
-  getShoppingListByUser(
-    @Args('id') id: string,
-    @Args('userId') userId: string,
-  ) {
+  getShoppingListByUser(@Args('id') id: string) {
     try {
-      return this.shoppingListsService.findOneByUser(id, userId);
+      return this.shoppingListsService.findOne(id);
+      // return this.shoppingListsService.findOneByUser(id, userId);
     } catch (err) {
       console.log('Error on finding shopping list', err);
     }
