@@ -15,14 +15,14 @@ export class ListProductsService {
 
   findAll(): Promise<ListProduct[]> {
     return this.listProductsRepository.find({
-      // relations: ['shoppingList'],
+      relations: ['shoppingList'],
     });
   }
 
   findAllByShoppingList(shoppingListId: string): Promise<ListProduct[]> {
     return this.listProductsRepository.find({
       where: { shoppingList: shoppingListId },
-      relations: ['shoppingList'],
+      // relations: ['shoppingList'],
     });
   }
 
