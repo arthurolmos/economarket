@@ -34,7 +34,9 @@ export class ShoppingListsService {
   }
 
   findOne(id: string): Promise<ShoppingList> {
-    return this.shoppingListsRepository.findOne(id);
+    return this.shoppingListsRepository.findOne(id, {
+      relations: ['listProducts', 'user', 'sharedUsers'],
+    });
   }
 
   async findOneByUser(id: string, userId: string): Promise<ShoppingList> {
