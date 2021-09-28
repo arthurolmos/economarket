@@ -45,7 +45,6 @@ export class ShoppingList {
   @OneToMany(() => ListProduct, (listProduct) => listProduct.shoppingList, {
     cascade: true,
     nullable: true,
-    eager: true,
     onDelete: 'CASCADE',
   })
   listProducts?: ListProduct[];

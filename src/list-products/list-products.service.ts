@@ -22,7 +22,7 @@ export class ListProductsService {
   findAllByShoppingList(shoppingListId: string): Promise<ListProduct[]> {
     return this.listProductsRepository.find({
       where: { shoppingList: shoppingListId },
-      // relations: ['shoppingList'],
+      relations: ['shoppingList'],
     });
   }
 
