@@ -15,7 +15,7 @@ export class ListProductsService {
 
   findAll(): Promise<ListProduct[]> {
     return this.listProductsRepository.find({
-      relations: ['shoppingList'],
+      // relations: ['shoppingList'],
     });
   }
 
