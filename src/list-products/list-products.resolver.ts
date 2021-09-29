@@ -6,7 +6,6 @@ import {
   Args,
   Mutation,
 } from '@nestjs/graphql';
-import { ShoppingList } from '../shopping-lists/shopping-list.entity';
 import { ShoppingListsService } from '../shopping-lists/shopping-lists.service';
 import { ListProductsCreateInput } from './inputs/list-products-create.input';
 import { ListProductsUpdateInput } from './inputs/list-products-update.input';

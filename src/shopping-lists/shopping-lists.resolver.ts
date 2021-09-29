@@ -52,7 +52,7 @@ export class ShoppingListsResolver {
   }
 
   @Query(() => ShoppingList, { name: 'shoppingList' })
-  getShoppingList(@Args('id') id: string) {
+  async getShoppingList(@Args('id') id: string) {
     try {
       return this.shoppingListsService.findOne(id);
     } catch (err) {
@@ -61,7 +61,10 @@ export class ShoppingListsResolver {
   }
 
   @Query(() => ShoppingList, { name: 'shoppingListByUser' })
-  getShoppingListByUser(@Args('id') id: string) {
+  getShoppingListByUser(
+    @Args('id') id: string,
+    @Args('userId') userId: string,
+  ) {
     try {
       return this.shoppingListsService.findOne(id);
       // return this.shoppingListsService.findOneByUser(id, userId);
