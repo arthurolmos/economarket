@@ -61,17 +61,17 @@ export class PushNotificationTokensService {
     );
   }
 
-  async update(user: User, token: string): Promise<PushNotificationToken> {
-    //TODO: resolver depois
-    const notification = await this.findOne(token);
-    if (!notification) throw new Error();
+  // async update(user: User, token: string): Promise<PushNotificationToken> {
+  //   //TODO: resolver depois
+  //   const notification = await this.findOne(token);
+  //   if (!notification) throw new Error();
 
-    Object.assign(notification, { token });
+  //   Object.assign(notification, { token });
 
-    await this.pushNoticationsTokensRepository.save(notification);
+  //   await this.pushNoticationsTokensRepository.save(notification);
 
-    return notification;
-  }
+  //   return notification;
+  // }
 
   async delete(token: string): Promise<void> {
     await this.pushNoticationsTokensRepository.delete({ token });

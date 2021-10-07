@@ -116,8 +116,8 @@ type Mutation {
   updateShoppingList(userId: String!, values: ShoppingListsUpdateInput!, id: String!): ShoppingList!
   finishShoppingList(userId: String!, id: String!): ShoppingList!
   shareShoppingList(sharedUserId: String!, id: String!): ShoppingList!
-  unshareShoppingList(sharedUsersId: [String!]!, userId: String!, id: String!): ShoppingList!
-  leaveSharedShoppingList(userId: String!, id: String!): String!
+  unshareShoppingList(userId: String!, id: String!): ShoppingList!
+  leaveSharedShoppingList(userId: String!, id: String!): ShoppingList!
   deleteShoppingList(userId: String!, id: String!): String!
   createListProduct(shoppingListId: String!, data: ListProductsCreateInput!): ListProduct!
   updateListProduct(shoppingListId: String!, values: ListProductsUpdateInput!, id: String!): ListProduct!

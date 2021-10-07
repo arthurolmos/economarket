@@ -3,32 +3,18 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Product } from './product.entity';
 import { ProductsResolver } from './products.resolver';
 import { ProductsService } from './products.service';
-import * as faker from 'faker';
 import { ProductsCreateInput } from './inputs/products-create.input';
 import { ProductsUpdateInput } from './inputs/products-update.input';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/user.entity';
+import { MockRepository, MockUser, MockProduct } from '../../test/mocks';
+import * as faker from 'faker';
 
 describe('ProductsResolver', () => {
   let resolver: ProductsResolver;
 
-  const mockProductsRepository = {
-    find: jest.fn(),
-    findOne: jest.fn(),
-    save: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn(),
-    restore: jest.fn(),
-  };
-
-  const mockUsersRepository = {
-    find: jest.fn(),
-    findOne: jest.fn(),
-    save: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn(),
-    restore: jest.fn(),
-  };
+  const mockProductsRepository = new MockRepository();
+  const mockUsersRepository = new MockRepository();
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -55,19 +41,9 @@ describe('ProductsResolver', () => {
   describe('getProducts', () => {
     const mockProducts: Product[] = [];
 
-    beforeAll(() => {
-      const user = new User();
-      user.id = faker.datatype.uuid();
-
+    beforeEach(() => {
       for (let i = 0; i < 5; i++) {
-        const product = new Product();
-        product.name = faker.commerce.product();
-        product.price = faker.datatype.number();
-        product.market = faker.company.companyName();
-        product.brand = faker.company.companyName();
-
-        product.user = user;
-
+        const product = new MockProduct();
         mockProducts.push(product);
       }
     });
@@ -83,51 +59,34 @@ describe('ProductsResolver', () => {
   });
 
   describe('getProductsByUser', () => {
+    let mockUser: User;
     const mockProducts: Product[] = [];
-    const users: User[] = [];
 
-    beforeAll(() => {
-      for (let i = 0; i < 2; i++) {
-        const user = new User();
-        user.id = faker.datatype.uuid();
-
-        users.push(user);
-      }
+    beforeEach(() => {
+      mockUser = new MockUser();
 
       for (let i = 0; i < 5; i++) {
-        const product = new Product();
-        product.name = faker.commerce.product();
-        product.price = faker.datatype.number();
-        product.market = faker.company.companyName();
-        product.brand = faker.company.companyName();
-
-        product.user = users[i % 2];
-
+        const product = new MockProduct(mockUser);
         mockProducts.push(product);
       }
     });
 
     it('should return all Products by User', async () => {
-      mockProductsRepository.find.mockReturnValue(
-        mockProducts.filter((product) => product.user.id === users[1].id),
-      );
+      const userId = mockUser.id;
+      mockProductsRepository.find.mockReturnValue(mockProducts);
 
-      const products = await resolver.getProductsByUser(users[1].id);
+      const products = await resolver.getProductsByUser(userId);
 
       expect(products).toBeDefined();
-      expect(products).toHaveLength(2);
+      expect(products).toHaveLength(5);
     });
   });
 
   describe('getProduct', () => {
-    const mockProduct = new Product();
+    let mockProduct: Product;
 
-    beforeAll(() => {
-      mockProduct.id = faker.datatype.uuid();
-      mockProduct.name = faker.commerce.product();
-      mockProduct.price = faker.datatype.number();
-      mockProduct.market = faker.company.companyName();
-      mockProduct.brand = faker.company.companyName();
+    beforeEach(() => {
+      mockProduct = new MockProduct();
     });
 
     it('should return an Product by passing its ID', async () => {
@@ -143,29 +102,31 @@ describe('ProductsResolver', () => {
   });
 
   describe('createProduct', () => {
-    let mockData: ProductsCreateInput;
-    const user = new User();
+    let mockUser: User;
+    let mockProduct: Product;
 
-    beforeAll(() => {
-      user.id = faker.datatype.uuid();
+    beforeEach(() => {
+      mockUser = new MockUser();
+    });
 
-      mockData = {
+    it('should create a new Product and returns it', async () => {
+      const mockData: ProductsCreateInput = {
         name: faker.commerce.product(),
         price: faker.datatype.number(),
         market: faker.company.companyName(),
         brand: faker.company.companyName(),
       };
-    });
 
-    it('should create a new Product and returns it', async () => {
-      const mockProduct = new Product();
-      mockProduct.name = mockData.name;
-      mockProduct.price = mockData.price;
-      mockProduct.market = mockData.market;
-      mockProduct.brand = mockData.brand;
+      mockProduct = new MockProduct(
+        mockUser,
+        mockData.name,
+        mockData.price,
+        mockData.market,
+        mockData.brand,
+      );
       mockProductsRepository.save.mockReturnValue(mockProduct);
-      mockUsersRepository.findOne.mockReturnValue(user);
-      const userId = user.id;
+      mockUsersRepository.findOne.mockReturnValue(mockUser);
+      const userId = mockUser.id;
 
       const product = await resolver.createProduct(mockData, userId);
 
@@ -175,6 +136,13 @@ describe('ProductsResolver', () => {
     });
 
     it('should throw an error if User not found', async () => {
+      const mockData: ProductsCreateInput = {
+        name: faker.commerce.product(),
+        price: faker.datatype.number(),
+        market: faker.company.companyName(),
+        brand: faker.company.companyName(),
+      };
+
       const userId = 'invalidId';
       mockUsersRepository.findOne.mockReturnValue(null);
 
@@ -187,13 +155,12 @@ describe('ProductsResolver', () => {
   });
 
   describe('updateProduct', () => {
-    const mockProduct = new Product();
+    let mockUser: User;
+    let mockProduct: Product;
 
-    beforeAll(() => {
-      mockProduct.name = faker.commerce.product();
-      mockProduct.price = faker.datatype.number();
-      mockProduct.market = faker.company.companyName();
-      mockProduct.brand = faker.company.companyName();
+    beforeEach(() => {
+      mockUser = new MockUser();
+      mockProduct = new MockProduct(mockUser);
     });
 
     it('should update firstname and lastname of an Product and returns it', async () => {
@@ -222,13 +189,10 @@ describe('ProductsResolver', () => {
   });
 
   describe('deleteProduct', () => {
-    const mockProduct = new Product();
+    let mockProduct: Product;
 
-    beforeAll(() => {
-      mockProduct.name = faker.commerce.product();
-      mockProduct.price = faker.datatype.number();
-      mockProduct.market = faker.company.companyName();
-      mockProduct.brand = faker.company.companyName();
+    beforeEach(() => {
+      mockProduct = new MockProduct();
     });
 
     it('should delete an Product', async () => {

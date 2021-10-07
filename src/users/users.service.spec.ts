@@ -2,20 +2,14 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from './users.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { User } from './user.entity';
-import * as faker from 'faker';
 import { UserCreateInput } from './inputs/user-create.input';
 import { UserUpdateInput } from './inputs/user-update.input';
+import { MockRepository, MockUser } from '../../test/mocks';
+import * as faker from 'faker';
 
 describe('UsersService', () => {
   let service: UsersService;
-  const mockRepository = {
-    find: jest.fn(),
-    findOne: jest.fn(),
-    save: jest.fn(),
-    update: jest.fn(),
-    softDelete: jest.fn(),
-    restore: jest.fn(),
-  };
+  const mockRepository = new MockRepository();
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -36,12 +30,9 @@ describe('UsersService', () => {
   describe('findAll', () => {
     const mockUsers: User[] = [];
 
-    beforeAll(() => {
+    beforeEach(() => {
       for (let i = 0; i < 5; i++) {
-        const user = new User();
-        user.firstName = faker.name.firstName();
-        user.lastName = faker.name.lastName();
-        user.email = faker.internet.email();
+        const user = new MockUser();
 
         mockUsers.push(user);
       }
@@ -61,14 +52,9 @@ describe('UsersService', () => {
   describe('findAllById', () => {
     const mockUsers: User[] = [];
 
-    beforeAll(() => {
+    beforeEach(() => {
       for (let i = 0; i < 5; i++) {
-        const user = new User();
-        user.id = faker.datatype.uuid();
-        user.firstName = faker.name.firstName();
-        user.lastName = faker.name.lastName();
-        user.email = faker.internet.email();
-
+        const user = new MockUser();
         mockUsers.push(user);
       }
     });
@@ -88,14 +74,9 @@ describe('UsersService', () => {
   describe('findAllByEmail', () => {
     const mockUsers: User[] = [];
 
-    beforeAll(() => {
+    beforeEach(() => {
       for (let i = 0; i < 5; i++) {
-        const user = new User();
-        user.id = faker.datatype.uuid();
-        user.firstName = faker.name.firstName();
-        user.lastName = faker.name.lastName();
-        user.email = faker.internet.email();
-
+        const user = new MockUser();
         mockUsers.push(user);
       }
     });
@@ -113,13 +94,10 @@ describe('UsersService', () => {
   });
 
   describe('findOne', () => {
-    const mockUser = new User();
+    let mockUser: User;
 
-    beforeAll(() => {
-      mockUser.id = faker.datatype.uuid();
-      mockUser.firstName = faker.name.firstName();
-      mockUser.lastName = faker.name.lastName();
-      mockUser.email = faker.internet.email();
+    beforeEach(() => {
+      mockUser = new MockUser();
     });
 
     it('should find an User by passing its ID ', async () => {
@@ -135,13 +113,10 @@ describe('UsersService', () => {
   });
 
   describe('findOneByEmail', () => {
-    const mockUser = new User();
+    let mockUser: User;
 
-    beforeAll(() => {
-      mockUser.id = faker.datatype.uuid();
-      mockUser.firstName = faker.name.firstName();
-      mockUser.lastName = faker.name.lastName();
-      mockUser.email = faker.internet.email();
+    beforeEach(() => {
+      mockUser = new MockUser();
     });
 
     it('should find an User by passing its Email ', async () => {
@@ -157,23 +132,23 @@ describe('UsersService', () => {
   });
 
   describe('create', () => {
-    let mockData: UserCreateInput;
+    let mockUser: User;
 
-    beforeAll(() => {
-      mockData = {
+    it('should create a new User and returns it', async () => {
+      const mockData: UserCreateInput = {
         firstName: faker.name.firstName(),
         lastName: faker.name.lastName(),
         email: faker.internet.email(),
         password: '12345678',
       };
-    });
 
-    it('should create a new User and returns it', async () => {
-      const mockUser = new User();
-      mockUser.firstName = mockData.firstName;
-      mockUser.lastName = mockData.lastName;
-      mockUser.email = mockData.email;
-      mockUser.password = mockData.password;
+      mockUser = new MockUser(
+        mockData.firstName,
+        mockData.lastName,
+        mockData.email,
+        mockData.password,
+      );
+
       mockRepository.save.mockReturnValue(mockUser);
 
       const user = await service.create(mockData);
@@ -185,14 +160,10 @@ describe('UsersService', () => {
   });
 
   describe('update', () => {
-    const mockUser = new User();
+    let mockUser: User;
 
-    beforeAll(() => {
-      mockUser.id = faker.datatype.uuid();
-      mockUser.firstName = faker.name.firstName();
-      mockUser.lastName = faker.name.lastName();
-      mockUser.email = faker.internet.email();
-      mockUser.password = '12345678';
+    beforeEach(() => {
+      mockUser = new MockUser();
     });
 
     it('should update firstname and lastname of an User and returns it', async () => {
@@ -228,13 +199,10 @@ describe('UsersService', () => {
   });
 
   describe('remove', () => {
-    const mockUser = new User();
+    let mockUser: User;
 
-    beforeAll(() => {
-      mockUser.id = faker.datatype.uuid();
-      mockUser.firstName = faker.name.firstName();
-      mockUser.lastName = faker.name.lastName();
-      mockUser.email = faker.internet.email();
+    beforeEach(() => {
+      mockUser = new MockUser();
     });
 
     it('should soft delete an User', async () => {
@@ -247,13 +215,10 @@ describe('UsersService', () => {
   });
 
   describe('restore', () => {
-    const mockUser = new User();
+    let mockUser: User;
 
-    beforeAll(() => {
-      mockUser.id = faker.datatype.uuid();
-      mockUser.firstName = faker.name.firstName();
-      mockUser.lastName = faker.name.lastName();
-      mockUser.email = faker.internet.email();
+    beforeEach(() => {
+      mockUser = new MockUser();
     });
 
     it('should restore a soft deleted User', async () => {

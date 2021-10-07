@@ -4,20 +4,14 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { User } from '../users/user.entity';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
-import * as faker from 'faker';
 import { UserCreateInput } from '../users/inputs/user-create.input';
+import { MockRepository, MockUser } from '../../test/mocks';
+import * as faker from 'faker';
 
 describe('AuthService', () => {
   let service: AuthService;
 
-  const mockUsersRepository = {
-    find: jest.fn(),
-    findOne: jest.fn(),
-    save: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn(),
-    restore: jest.fn(),
-  };
+  const mockUsersRepository = new MockRepository();
 
   const mockJwtService = {
     sign: jest.fn(),
@@ -57,10 +51,7 @@ describe('AuthService', () => {
     let mockUser: User;
 
     beforeEach(async () => {
-      mockUser = new User();
-      mockUser.id = faker.datatype.uuid();
-      mockUser.email = faker.internet.email();
-      mockUser.password = '12345678';
+      mockUser = new MockUser();
       await mockUser.encryptPassword();
     });
 
@@ -89,10 +80,7 @@ describe('AuthService', () => {
     let mockUser: User;
 
     beforeEach(async () => {
-      mockUser = new User();
-      mockUser.id = faker.datatype.uuid();
-      mockUser.email = faker.internet.email();
-      mockUser.password = '12345678';
+      mockUser = new MockUser();
       await mockUser.encryptPassword();
     });
 
@@ -119,18 +107,17 @@ describe('AuthService', () => {
 
   describe('login', () => {
     let mockUser: User;
+    let password: string;
 
     beforeEach(async () => {
-      mockUser = new User();
-      mockUser.id = faker.datatype.uuid();
-      mockUser.email = faker.internet.email();
-      mockUser.password = '12345678';
+      mockUser = new MockUser();
+      password = mockUser.password;
+
       await mockUser.encryptPassword();
     });
 
     it('should receive an username, a password and return User and JWT Token', async () => {
       const username = mockUser.email;
-      const password = '12345678';
       mockJwtService.sign.mockReturnValue('jwttoken');
       mockUsersRepository.findOne.mockReturnValue(mockUser);
 
@@ -141,34 +128,13 @@ describe('AuthService', () => {
       expect(mockJwtService.sign).toHaveBeenCalledTimes(1);
       expect(mockUsersRepository.findOne).toHaveBeenCalledTimes(1);
     });
-
-    it('should receive an invalid username, a password and throw an Error', async () => {
-      const username = 'invalid-email';
-      const password = mockUser.password;
-      mockUsersRepository.findOne.mockReturnValue(null);
-
-      await expect(service.login(username, password)).rejects.toThrowError();
-      expect(mockUsersRepository.findOne).toHaveBeenCalledTimes(1);
-    });
-
-    it('should receive an username, an invalid password and throw an Error', async () => {
-      const username = mockUser.email;
-      const password = 'invalid-password';
-
-      await expect(service.login(username, password)).rejects.toThrowError();
-    });
   });
 
   describe('register', () => {
     let mockUser: User;
 
     beforeEach(async () => {
-      mockUser = new User();
-      mockUser.id = faker.datatype.uuid();
-      mockUser.firstName = faker.name.firstName();
-      mockUser.lastName = faker.name.lastName();
-      mockUser.email = faker.internet.email();
-      mockUser.password = '12345678';
+      mockUser = new MockUser();
       await mockUser.encryptPassword();
     });
 

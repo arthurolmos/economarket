@@ -150,18 +150,15 @@ export class ShoppingListsResolver {
   async unshareShoppingList(
     @Args('id') id: string,
     @Args('userId') userId: string,
-    @Args({ name: 'sharedUsersId', type: () => [String] })
-    sharedUsersId: string[],
   ) {
     try {
-      const users = await this.usersService.findAllById(sharedUsersId);
-      if (!users) throw new Error();
+      const user = await this.usersService.findOne(userId);
+      if (!user) throw new Error();
 
       const shoppingList =
-        await this.shoppingListsService.deleteSharedUsersFromShoppingList(
+        await this.shoppingListsService.deleteSharedUserFromShoppingList(
           id,
-          userId,
-          users,
+          user,
         );
 
       return shoppingList;
@@ -170,7 +167,7 @@ export class ShoppingListsResolver {
     }
   }
 
-  @Mutation(() => String)
+  @Mutation(() => ShoppingList)
   async leaveSharedShoppingList(
     @Args('id') id: string,
     @Args('userId') userId: string,
@@ -179,13 +176,13 @@ export class ShoppingListsResolver {
       const user = await this.usersService.findOne(userId);
       if (!user) throw new Error();
 
-      await this.shoppingListsService.deleteSharedUsersFromShoppingList(
-        id,
-        userId,
-        [user],
-      );
+      const shoppingList =
+        await this.shoppingListsService.deleteSharedUserFromShoppingList(
+          id,
+          user,
+        );
 
-      return id;
+      return shoppingList;
     } catch (err) {
       console.log('Error on removing shared users from shopping list', err);
     }

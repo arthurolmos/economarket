@@ -5,44 +5,42 @@ import { UsersService } from '../users/users.service';
 import { NotificationsResolver } from './notifications.resolver';
 import { NotificationsService } from './notifications.service';
 import { Notification } from './notification.entity';
-import * as faker from 'faker';
 import { NotificationsCreateInput } from './inputs/notifications-create.input';
+import { MockRepository, MockUser, MockNotification } from '../../test/mocks';
+import { PushNotificationManagersService } from '../push-notification-managers/push-notification-managers.service';
+import { expo } from '../push-notification-managers/expo.provider';
+import { PushNotificationTokensService } from '../push-notification-tokens/push-notification-tokens.service';
+import { PushNotificationToken } from '../push-notification-tokens/push-notification-token.entity';
+import * as faker from 'faker';
 
 describe('NotificationsResolver', () => {
   let resolver: NotificationsResolver;
 
-  const mockNotificationssRepository = {
-    find: jest.fn(),
-    findOne: jest.fn(),
-    save: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn(),
-    restore: jest.fn(),
-  };
-
-  const mockUsersRepository = {
-    find: jest.fn(),
-    findOne: jest.fn(),
-    save: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn(),
-    restore: jest.fn(),
-  };
+  const mockNotificationssRepository = new MockRepository();
+  const mockUsersRepository = new MockRepository();
+  const mockPushNotificationTokensRepository = new MockRepository();
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         NotificationsResolver,
         NotificationsService,
+        PushNotificationManagersService,
+        PushNotificationTokensService,
+        UsersService,
         {
           provide: getRepositoryToken(Notification),
           useValue: mockNotificationssRepository,
         },
-        UsersService,
         {
           provide: getRepositoryToken(User),
           useValue: mockUsersRepository,
         },
+        {
+          provide: getRepositoryToken(PushNotificationToken),
+          useValue: mockPushNotificationTokensRepository,
+        },
+        ...expo,
       ],
     }).compile();
 
@@ -54,17 +52,9 @@ describe('NotificationsResolver', () => {
   describe('getNotifications', () => {
     const mockNotifications: Notification[] = [];
 
-    beforeAll(() => {
-      const user = new User();
-      user.id = faker.datatype.uuid();
-
+    beforeEach(() => {
       for (let i = 0; i < 5; i++) {
-        const notification = new Notification();
-        notification.title = faker.lorem.words();
-        notification.body = faker.lorem.text();
-
-        notification.user = user;
-
+        const notification = new MockNotification();
         mockNotifications.push(notification);
       }
     });
@@ -80,49 +70,34 @@ describe('NotificationsResolver', () => {
   });
 
   describe('getNotificationsByUser', () => {
+    let mockUser: User;
     const mockNotifications: Notification[] = [];
-    const users: User[] = [];
 
-    beforeAll(() => {
-      for (let i = 0; i < 2; i++) {
-        const user = new User();
-        user.id = faker.datatype.uuid();
-
-        users.push(user);
-      }
+    beforeEach(() => {
+      mockUser = new User();
 
       for (let i = 0; i < 5; i++) {
-        const notification = new Notification();
-        notification.title = faker.lorem.words();
-        notification.body = faker.lorem.text();
-
-        notification.user = users[i % 2];
-
+        const notification = new MockNotification(mockUser);
         mockNotifications.push(notification);
       }
     });
 
     it('should return all Notifications by User', async () => {
-      mockNotificationssRepository.find.mockReturnValue(
-        mockNotifications.filter(
-          (notification) => notification.user.id === users[1].id,
-        ),
-      );
+      const userId = mockUser.id;
+      mockNotificationssRepository.find.mockReturnValue(mockNotifications);
 
-      const products = await resolver.getNotificationsByUser(users[1].id);
+      const products = await resolver.getNotificationsByUser(userId);
 
       expect(products).toBeDefined();
-      expect(products).toHaveLength(2);
+      expect(products).toHaveLength(5);
     });
   });
 
   describe('getNotification', () => {
-    const mockNotification = new Notification();
+    let mockNotification: Notification;
 
-    beforeAll(() => {
-      mockNotification.id = faker.datatype.uuid();
-      mockNotification.title = faker.lorem.words();
-      mockNotification.body = faker.lorem.text();
+    beforeEach(() => {
+      mockNotification = new MockNotification();
     });
 
     it('should return an Notification by passing its ID', async () => {
@@ -138,25 +113,26 @@ describe('NotificationsResolver', () => {
   });
 
   describe('createNotification', () => {
-    let mockData: NotificationsCreateInput;
-    const user = new User();
+    let mockUser: User;
+    let mockNotification: Notification;
 
-    beforeAll(() => {
-      user.id = faker.datatype.uuid();
-
-      mockData = {
-        title: faker.lorem.words(),
-        body: faker.lorem.text(),
-      };
+    beforeEach(() => {
+      mockUser = new MockUser();
     });
 
     it('should create a new Notification and returns it', async () => {
-      const mockNotification = new Notification();
-      mockNotification.title = mockData.title;
-      mockNotification.body = mockData.body;
+      const mockData: NotificationsCreateInput = {
+        title: faker.lorem.words(),
+        body: faker.lorem.text(),
+      };
+      mockNotification = new MockNotification(
+        mockUser,
+        mockData.title,
+        mockData.body,
+      );
       mockNotificationssRepository.save.mockReturnValue(mockNotification);
-      mockUsersRepository.findOne.mockReturnValue(user);
-      const userId = user.id;
+      mockUsersRepository.findOne.mockReturnValue(mockUser);
+      const userId = mockUser.id;
 
       const notification = await resolver.createNotification(mockData, userId);
 
@@ -166,6 +142,10 @@ describe('NotificationsResolver', () => {
     });
 
     it('should throw an error if User not found', async () => {
+      const mockData: NotificationsCreateInput = {
+        title: faker.lorem.words(),
+        body: faker.lorem.text(),
+      };
       const userId = 'invalidId';
       mockUsersRepository.findOne.mockReturnValue(null);
 
@@ -178,12 +158,10 @@ describe('NotificationsResolver', () => {
   });
 
   describe('deleteNotification', () => {
-    const mockNotification = new Notification();
+    let mockNotification: Notification;
 
-    beforeAll(() => {
-      mockNotification.id = faker.datatype.uuid();
-      mockNotification.title = faker.lorem.words();
-      mockNotification.body = faker.lorem.text();
+    beforeEach(() => {
+      mockNotification = new MockNotification();
     });
 
     it('should delete an Notification', async () => {
@@ -196,14 +174,6 @@ describe('NotificationsResolver', () => {
   });
 
   describe('deleteAllNotification', () => {
-    const mockNotification = new Notification();
-
-    beforeAll(() => {
-      mockNotification.id = faker.datatype.uuid();
-      mockNotification.title = faker.lorem.words();
-      mockNotification.body = faker.lorem.text();
-    });
-
     it('should delete all Notifications', async () => {
       mockNotificationssRepository.delete.mockReturnValue(Promise.resolve());
 

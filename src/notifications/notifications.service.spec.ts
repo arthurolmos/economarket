@@ -2,30 +2,16 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { User } from '../users/user.entity';
 import { NotificationsService } from './notifications.service';
-import * as faker from 'faker';
 import { Notification } from './notification.entity';
 import { NotificationsCreateInput } from './inputs/notifications-create.input';
+import { MockRepository, MockNotification, MockUser } from '../../test/mocks';
+import * as faker from 'faker';
 
 describe('NotificationsService', () => {
   let service: NotificationsService;
 
-  const mockNotificationsRepository = {
-    find: jest.fn(),
-    findOne: jest.fn(),
-    save: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn(),
-    restore: jest.fn(),
-  };
-
-  const mockUsersRepository = {
-    find: jest.fn(),
-    findOne: jest.fn(),
-    save: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn(),
-    restore: jest.fn(),
-  };
+  const mockNotificationsRepository = new MockRepository();
+  const mockUsersRepository = new MockRepository();
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -50,12 +36,9 @@ describe('NotificationsService', () => {
   describe('findAll', () => {
     const mockNotifications: Notification[] = [];
 
-    beforeAll(() => {
+    beforeEach(() => {
       for (let i = 0; i < 5; i++) {
-        const notification = new Notification();
-        notification.title = faker.lorem.words();
-        notification.body = faker.lorem.text();
-
+        const notification = new MockNotification();
         mockNotifications.push(notification);
       }
     });
@@ -72,50 +55,34 @@ describe('NotificationsService', () => {
   });
 
   describe('findAllByUser', () => {
+    let mockUser: User;
     const mockNotifications: Notification[] = [];
-    const users: User[] = [];
 
-    beforeAll(() => {
-      for (let i = 0; i < 2; i++) {
-        const user = new User();
-        user.id = faker.datatype.uuid();
-
-        users.push(user);
-      }
-
+    beforeEach(() => {
+      mockUser = new MockUser();
       for (let i = 0; i < 5; i++) {
-        const notification = new Notification();
-        notification.title = faker.lorem.words();
-        notification.body = faker.lorem.text();
-
-        notification.user = users[i % 2];
-
+        const notification = new MockNotification(mockUser);
         mockNotifications.push(notification);
       }
     });
 
     it('should find all Notifications by User', async () => {
-      mockNotificationsRepository.find.mockReturnValue(
-        mockNotifications.filter(
-          (notification) => notification.user.id === users[1].id,
-        ),
-      );
+      const userId = mockUser.id;
+      mockNotificationsRepository.find.mockReturnValue(mockNotifications);
 
-      const notifications = await service.findAllByUser(users[1].id);
+      const notifications = await service.findAllByUser(userId);
 
       expect(notifications).toBeDefined();
-      expect(notifications).toHaveLength(2);
+      expect(notifications).toHaveLength(5);
       expect(mockNotificationsRepository.find).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('findOne', () => {
-    const mockNotification = new Notification();
+    let mockNotification: Notification;
 
-    beforeAll(() => {
-      mockNotification.id = faker.datatype.uuid();
-      mockNotification.title = faker.lorem.words();
-      mockNotification.body = faker.lorem.text();
+    beforeEach(() => {
+      mockNotification = new MockNotification();
     });
 
     it('should find an Notification by passing its ID ', async () => {
@@ -131,24 +98,27 @@ describe('NotificationsService', () => {
   });
 
   describe('create', () => {
-    let mockData: NotificationsCreateInput;
-    const user = new User();
+    let mockUser: User;
+    let mockNotification: Notification;
 
-    beforeAll(() => {
-      mockData = {
-        title: faker.lorem.words(),
-        body: faker.lorem.text(),
-      };
+    beforeEach(() => {
+      mockUser = new MockUser();
     });
 
     it('should create a new Notification and returns it', async () => {
-      const mockNotification = new Notification();
-      mockNotification.title = mockData.title;
-      mockNotification.body = mockData.body;
+      const mockData: NotificationsCreateInput = {
+        title: faker.lorem.words(),
+        body: faker.lorem.text(),
+      };
+      mockNotification = new MockNotification(
+        mockUser,
+        mockData.title,
+        mockData.body,
+      );
       mockNotificationsRepository.save.mockReturnValue(mockNotification);
-      mockUsersRepository.findOne.mockReturnValue(user);
+      mockUsersRepository.findOne.mockReturnValue(mockUser);
 
-      const notification = await service.create(mockData, user);
+      const notification = await service.create(mockData, mockUser);
 
       expect(notification).toBeDefined();
       expect(notification).toEqual(mockNotification);
@@ -157,12 +127,10 @@ describe('NotificationsService', () => {
   });
 
   describe('remove', () => {
-    const mockNotification = new Notification();
+    let mockNotification: Notification;
 
-    beforeAll(() => {
-      mockNotification.id = faker.datatype.uuid();
-      mockNotification.title = faker.lorem.word();
-      mockNotification.body = faker.lorem.text();
+    beforeEach(() => {
+      mockNotification = new MockNotification();
     });
 
     it('should soft delete an Notification', async () => {

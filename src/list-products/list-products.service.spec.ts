@@ -4,30 +4,20 @@ import { ShoppingList } from '../shopping-lists/shopping-list.entity';
 import { ShoppingListsService } from '../shopping-lists/shopping-lists.service';
 import { ListProduct } from './list-product.entity';
 import { ListProductsService } from './list-products.service';
-import { User } from '../users/user.entity';
-import * as faker from 'faker';
 import { ListProductsCreateInput } from './inputs/list-products-create.input';
 import { ListProductsUpdateInput } from './inputs/list-products-update.input';
+import {
+  MockListProduct,
+  MockRepository,
+  MockShoppingList,
+} from '../../test/mocks';
+import * as faker from 'faker';
 
 describe('ListProductsService', () => {
   let service: ListProductsService;
 
-  const mockListProductsRepository = {
-    find: jest.fn(),
-    findOne: jest.fn(),
-    save: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn(),
-    restore: jest.fn(),
-  };
-  const mockShoppingListsRepository = {
-    find: jest.fn(),
-    findOne: jest.fn(),
-    save: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn(),
-    restore: jest.fn(),
-  };
+  const mockListProductsRepository = new MockRepository();
+  const mockShoppingListsRepository = new MockRepository();
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -52,40 +42,11 @@ describe('ListProductsService', () => {
   });
 
   describe('findAll', () => {
-    const mockUsers: User[] = [];
-    const mockShoppingLists: ShoppingList[] = [];
     const mockListProducts: ListProduct[] = [];
 
-    beforeAll(() => {
-      for (let i = 0; i < 2; i++) {
-        const user = new User();
-        user.firstName = faker.name.firstName();
-        user.lastName = faker.name.lastName();
-        user.email = faker.internet.email();
-
-        mockUsers.push(user);
-      }
-
-      for (let i = 0; i < 6; i++) {
-        const shoppingList = new ShoppingList();
-        shoppingList.name = faker.name.firstName();
-        shoppingList.date = new Date();
-
-        shoppingList.user = i % 2 === 0 ? mockUsers[0] : mockUsers[1];
-
-        mockShoppingLists.push(shoppingList);
-      }
-
-      for (let i = 0; i < 12; i++) {
-        const listProduct = new ListProduct();
-        listProduct.id = faker.datatype.uuid();
-        listProduct.name = faker.commerce.productName();
-        listProduct.price = parseFloat(faker.commerce.price());
-        listProduct.quantity = faker.datatype.number();
-        listProduct.purchased = i % 2 === 0 ? true : false;
-        listProduct.shoppingList =
-          i > 5 ? mockShoppingLists[i - 6] : mockShoppingLists[i];
-
+    beforeEach(() => {
+      for (let i = 0; i < 5; i++) {
+        const listProduct = new MockListProduct();
         mockListProducts.push(listProduct);
       }
     });
@@ -96,101 +57,43 @@ describe('ListProductsService', () => {
       const listProducts = await service.findAll();
 
       expect(listProducts).toBeDefined();
-      expect(listProducts).toHaveLength(12);
+      expect(listProducts).toHaveLength(5);
       expect(mockListProductsRepository.find).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('findAllByShoppingList', () => {
-    const mockUsers: User[] = [];
-    const mockShoppingLists: ShoppingList[] = [];
+    let mockShoppingList: ShoppingList;
     const mockListProducts: ListProduct[] = [];
 
-    beforeAll(() => {
-      for (let i = 0; i < 2; i++) {
-        const user = new User();
-        user.firstName = faker.name.firstName();
-        user.lastName = faker.name.lastName();
-        user.email = faker.internet.email();
+    beforeEach(() => {
+      mockShoppingList = new MockShoppingList();
 
-        mockUsers.push(user);
-      }
-
-      for (let i = 0; i < 6; i++) {
-        const shoppingList = new ShoppingList();
-        shoppingList.id = i.toString();
-        shoppingList.name = faker.name.firstName();
-        shoppingList.date = new Date();
-
-        shoppingList.user = i % 2 === 0 ? mockUsers[0] : mockUsers[1];
-
-        mockShoppingLists.push(shoppingList);
-      }
-
-      for (let i = 0; i < 12; i++) {
-        const listProduct = new ListProduct();
-        listProduct.id = faker.datatype.uuid();
-        listProduct.name = faker.commerce.productName();
-        listProduct.price = parseFloat(faker.commerce.price());
-        listProduct.quantity = faker.datatype.number();
-        listProduct.purchased = i % 2 === 0 ? true : false;
-        listProduct.shoppingList =
-          i > 5 ? mockShoppingLists[i - 6] : mockShoppingLists[i];
-
+      for (let i = 0; i < 5; i++) {
+        const listProduct = new MockListProduct(mockShoppingList);
         mockListProducts.push(listProduct);
       }
     });
 
     it('should return all List Produts from a Shopping List', async () => {
-      const shoppingListId = mockShoppingLists[0].id;
-      const products = mockListProducts.filter(
-        (product) => product.shoppingList.id === shoppingListId,
-      );
+      const shoppingListId = mockShoppingList.id;
+      const products = mockListProducts;
       mockListProductsRepository.find.mockReturnValue(products);
 
       const listProducts = await service.findAllByShoppingList(shoppingListId);
 
       expect(listProducts).toBeDefined();
-      expect(listProducts).toHaveLength(2);
+      expect(listProducts).toHaveLength(5);
       expect(mockListProductsRepository.find).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('findOne', () => {
-    const mockUsers: User[] = [];
-    const mockShoppingLists: ShoppingList[] = [];
     const mockListProducts: ListProduct[] = [];
 
-    beforeAll(() => {
-      for (let i = 0; i < 2; i++) {
-        const user = new User();
-        user.firstName = faker.name.firstName();
-        user.lastName = faker.name.lastName();
-        user.email = faker.internet.email();
-
-        mockUsers.push(user);
-      }
-
-      for (let i = 0; i < 6; i++) {
-        const shoppingList = new ShoppingList();
-        shoppingList.name = faker.name.firstName();
-        shoppingList.date = new Date();
-
-        shoppingList.user = i % 2 === 0 ? mockUsers[0] : mockUsers[1];
-
-        mockShoppingLists.push(shoppingList);
-      }
-
-      for (let i = 0; i < 12; i++) {
-        const listProduct = new ListProduct();
-        listProduct.id = faker.datatype.uuid();
-        listProduct.name = faker.commerce.productName();
-        listProduct.price = parseFloat(faker.commerce.price());
-        listProduct.quantity = faker.datatype.number();
-        listProduct.purchased = i % 2 === 0 ? true : false;
-        listProduct.shoppingList =
-          i > 5 ? mockShoppingLists[i - 6] : mockShoppingLists[i];
-
+    beforeEach(() => {
+      for (let i = 0; i < 5; i++) {
+        const listProduct = new MockListProduct();
         mockListProducts.push(listProduct);
       }
     });
@@ -208,47 +111,20 @@ describe('ListProductsService', () => {
   });
 
   describe('findOneByShoppingList', () => {
-    const mockUsers: User[] = [];
-    const mockShoppingLists: ShoppingList[] = [];
+    let mockShoppingList: ShoppingList;
     const mockListProducts: ListProduct[] = [];
 
-    beforeAll(() => {
-      for (let i = 0; i < 2; i++) {
-        const user = new User();
-        user.firstName = faker.name.firstName();
-        user.lastName = faker.name.lastName();
-        user.email = faker.internet.email();
+    beforeEach(() => {
+      mockShoppingList = new MockShoppingList();
 
-        mockUsers.push(user);
-      }
-
-      for (let i = 0; i < 6; i++) {
-        const shoppingList = new ShoppingList();
-        shoppingList.id = i.toString();
-        shoppingList.name = faker.name.firstName();
-        shoppingList.date = new Date();
-
-        shoppingList.user = i % 2 === 0 ? mockUsers[0] : mockUsers[1];
-
-        mockShoppingLists.push(shoppingList);
-      }
-
-      for (let i = 0; i < 12; i++) {
-        const listProduct = new ListProduct();
-        listProduct.id = faker.datatype.uuid();
-        listProduct.name = faker.commerce.productName();
-        listProduct.price = parseFloat(faker.commerce.price());
-        listProduct.quantity = faker.datatype.number();
-        listProduct.purchased = i % 2 === 0 ? true : false;
-        listProduct.shoppingList =
-          i > 5 ? mockShoppingLists[i - 6] : mockShoppingLists[i];
-
+      for (let i = 0; i < 5; i++) {
+        const listProduct = new MockListProduct(mockShoppingList);
         mockListProducts.push(listProduct);
       }
     });
 
     it('should return one List Product by passing its ID and Shopping List ID', async () => {
-      const shoppingListId = mockListProducts[0].shoppingList.id;
+      const shoppingListId = mockShoppingList.id;
       const id = mockListProducts[0].id;
       const product = mockListProducts[0];
       mockListProductsRepository.findOne.mockReturnValue(product);
@@ -265,35 +141,33 @@ describe('ListProductsService', () => {
   });
 
   describe('create', () => {
-    const mockUser = new User();
-    const mockShoppingList = new ShoppingList();
+    let mockShoppingList: ShoppingList;
+    let mockListProduct: ListProduct;
+    let mockData: ListProductsCreateInput;
 
-    beforeAll(() => {
-      mockUser.id = faker.datatype.uuid();
-      mockUser.firstName = faker.name.firstName();
-      mockUser.lastName = faker.name.lastName();
-      mockUser.email = faker.internet.email();
-      mockUser.password = '12345678';
+    beforeEach(() => {
+      mockShoppingList = new MockShoppingList();
 
-      mockShoppingList.name = faker.name.firstName();
-      mockShoppingList.date = new Date();
-
-      mockShoppingList.user = mockUser;
-    });
-
-    it('should create a new List Product and return it', async () => {
-      const mockData: ListProductsCreateInput = {
+      mockData = {
         name: faker.commerce.productName(),
         price: parseFloat(faker.commerce.price()),
+        brand: faker.company.companyName(),
+        market: faker.company.companyName(),
         quantity: faker.datatype.number(),
         purchased: false,
       };
+    });
 
-      const mockListProduct = new ListProduct();
-      mockListProduct.name = mockData.name;
-      mockListProduct.price = mockData.price;
-      mockListProduct.quantity = mockData.quantity;
-      mockListProduct.shoppingList = mockShoppingList;
+    it('should create a new List Product and return it', async () => {
+      mockListProduct = new MockListProduct(
+        mockShoppingList,
+        mockData.name,
+        mockData.price,
+        mockData.brand,
+        mockData.market,
+        mockData.purchased,
+        mockData.quantity,
+      );
       mockListProductsRepository.save.mockReturnValue(mockListProduct);
 
       const listProduct = await service.create(mockData, mockShoppingList);
@@ -305,28 +179,11 @@ describe('ListProductsService', () => {
   });
 
   describe('update', () => {
-    const mockUser = new User();
-    const mockShoppingList = new ShoppingList();
-    const mockListProduct = new ListProduct();
+    let mockShoppingList: ShoppingList;
+    let mockListProduct: ListProduct;
 
-    beforeAll(() => {
-      mockUser.id = faker.datatype.uuid();
-      mockUser.firstName = faker.name.firstName();
-      mockUser.lastName = faker.name.lastName();
-      mockUser.email = faker.internet.email();
-      mockUser.password = '12345678';
-
-      mockShoppingList.id = faker.datatype.uuid();
-      mockShoppingList.name = faker.name.firstName();
-      mockShoppingList.date = new Date();
-
-      mockShoppingList.user = mockUser;
-
-      mockListProduct.id = faker.datatype.uuid();
-      mockListProduct.name = faker.commerce.productName();
-      mockListProduct.price = faker.datatype.number();
-      mockListProduct.quantity = faker.datatype.number();
-      mockListProduct.shoppingList = mockShoppingList;
+    beforeEach(() => {
+      mockShoppingList = new ShoppingList();
     });
 
     it('should create a new List Product, update and returns it', async () => {
@@ -336,7 +193,7 @@ describe('ListProductsService', () => {
         purchased: true,
         quantity: 123,
       };
-      const mockListProduct = new ListProduct();
+      mockListProduct = new MockListProduct();
       mockListProduct.name = mockValues.name;
       mockListProduct.price = mockValues.price;
       mockListProduct.purchased = mockValues.purchased;
@@ -373,27 +230,12 @@ describe('ListProductsService', () => {
   });
 
   describe('remove', () => {
-    const mockUser = new User();
-    const mockShoppingList = new ShoppingList();
-    const mockListProduct = new ListProduct();
+    let mockShoppingList: ShoppingList;
+    let mockListProduct: ListProduct;
 
-    beforeAll(() => {
-      mockUser.id = faker.datatype.uuid();
-      mockUser.firstName = faker.name.firstName();
-      mockUser.lastName = faker.name.lastName();
-      mockUser.email = faker.internet.email();
-      mockUser.password = '12345678';
-
-      mockShoppingList.id = faker.datatype.uuid();
-      mockShoppingList.name = faker.name.firstName();
-      mockShoppingList.date = new Date();
-      mockShoppingList.user = mockUser;
-
-      mockListProduct.id = faker.datatype.uuid();
-      mockListProduct.name = faker.commerce.productName();
-      mockListProduct.price = faker.datatype.number();
-      mockListProduct.quantity = faker.datatype.number();
-      mockListProduct.shoppingList = mockShoppingList;
+    beforeEach(() => {
+      mockShoppingList = new MockShoppingList();
+      mockListProduct = new MockListProduct(mockShoppingList);
     });
 
     it('should delete a List Product', async () => {

@@ -103,26 +103,19 @@ export class ShoppingListsService {
     return shoppingList;
   }
 
-  async deleteSharedUsersFromShoppingList(
+  async deleteSharedUserFromShoppingList(
     id: string,
-    userId: string,
-    sharedUsers: User[],
+    user: User,
   ): Promise<ShoppingList> {
-    const shoppingList = await this.findOneByUser(id, userId);
+    const shoppingList = await this.findOne(id);
     if (!shoppingList) throw new Error();
 
-    const ids = shoppingList.sharedUsers.map((user) => user.id);
+    const index = shoppingList.sharedUsers.findIndex(
+      (sharedUser) => sharedUser.id === user.id,
+    );
+    if (index < 0) throw new Error('User not found');
 
-    const index = [];
-    sharedUsers.forEach((user) => {
-      const i = ids.indexOf(user.id);
-
-      index.push(i);
-    });
-
-    index.forEach((i) => {
-      shoppingList.sharedUsers.splice(i, 1);
-    });
+    shoppingList.sharedUsers.splice(index, 1);
 
     await this.shoppingListsRepository.save(shoppingList);
 

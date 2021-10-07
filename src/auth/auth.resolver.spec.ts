@@ -5,20 +5,14 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { User } from '../users/user.entity';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
-import * as faker from 'faker';
 import { UserCreateInput } from '../users/inputs/user-create.input';
+import { MockRepository, MockUser } from '../../test/mocks';
+import * as faker from 'faker';
 
 describe('AuthResolver', () => {
   let resolver: AuthResolver;
 
-  const mockUsersRepository = {
-    find: jest.fn(),
-    findOne: jest.fn(),
-    save: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn(),
-    restore: jest.fn(),
-  };
+  const mockUsersRepository = new MockRepository();
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -49,20 +43,17 @@ describe('AuthResolver', () => {
 
   describe('login', () => {
     let mockUser: User;
+    let password: string;
 
     beforeEach(async () => {
-      mockUser = new User();
-      mockUser.id = faker.datatype.uuid();
-      mockUser.firstName = faker.name.firstName();
-      mockUser.lastName = faker.name.lastName();
-      mockUser.email = faker.internet.email();
-      mockUser.password = '12345678';
+      mockUser = new MockUser();
+      password = mockUser.password;
       await mockUser.encryptPassword();
     });
 
     it('should login an User', async () => {
       mockUsersRepository.findOne.mockReturnValue(mockUser);
-      const { token, user } = await resolver.login(mockUser.email, '12345678');
+      const { token, user } = await resolver.login(mockUser.email, password);
 
       expect(token).toBeDefined();
       expect(user).toBeDefined();
@@ -72,28 +63,30 @@ describe('AuthResolver', () => {
 
   describe('register', () => {
     let mockUser: User;
+    let mockData: UserCreateInput;
 
     beforeEach(async () => {
-      mockUser = new User();
-      mockUser.id = faker.datatype.uuid();
-      mockUser.firstName = faker.name.firstName();
-      mockUser.lastName = faker.name.lastName();
-      mockUser.email = faker.internet.email();
-      mockUser.password = '12345678';
+      mockData = {
+        firstName: faker.name.firstName(),
+        lastName: faker.name.lastName(),
+        email: faker.internet.email(),
+        password: '12345678',
+      };
+
+      mockUser = new MockUser(
+        mockData.firstName,
+        mockData.lastName,
+        mockData.email,
+        mockData.password,
+      );
       await mockUser.encryptPassword();
     });
 
     it('should register a new User', async () => {
-      const data: UserCreateInput = {
-        firstName: mockUser.firstName,
-        lastName: mockUser.lastName,
-        email: mockUser.email,
-        password: '12345678',
-      };
       mockUsersRepository.findOne.mockReturnValue(null);
       mockUsersRepository.save.mockReturnValue(mockUser);
 
-      const { user, token } = await resolver.register(data);
+      const { user, token } = await resolver.register(mockData);
 
       expect(user).toBeDefined();
       expect(token).toBeDefined();

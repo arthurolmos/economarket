@@ -11,8 +11,6 @@ export class PushNotificationManagersService {
   ) {}
 
   async sendNotification(notification: Notification) {
-    console.log('im here');
-
     const notificationTokens =
       await this.pushNotificationTokensService.findAllByUser(
         notification.user.id,
