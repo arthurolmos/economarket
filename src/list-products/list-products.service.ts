@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ShoppingList } from '../shopping-lists/shopping-list.entity';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { ListProductsCreateInput } from './inputs/list-products-create.input';
 import { ListProductsUpdateInput } from './inputs/list-products-update.input';
 import { ListProduct } from './list-product.entity';
@@ -19,9 +19,25 @@ export class ListProductsService {
     });
   }
 
+  findAllByIds(ids: string[]): Promise<ListProduct[]> {
+    return this.listProductsRepository.find({
+      where: { id: In(ids) },
+      relations: ['shoppingList'],
+    });
+  }
+
   findAllByShoppingList(shoppingListId: string): Promise<ListProduct[]> {
     return this.listProductsRepository.find({
       where: { shoppingList: shoppingListId },
+      relations: ['shoppingList'],
+    });
+  }
+
+  findAllPendingByShoppingLists(
+    shoppingListIds: string[],
+  ): Promise<ListProduct[]> {
+    return this.listProductsRepository.find({
+      where: { shoppingList: In(shoppingListIds), purchased: false },
       relations: ['shoppingList'],
     });
   }
@@ -75,5 +91,11 @@ export class ListProductsService {
     if (!listProduct) throw new Error();
 
     await this.listProductsRepository.delete(id);
+  }
+
+  async removeMany(ids: string[]): Promise<void> {
+    const listProducts = await this.findAllByIds(ids);
+
+    await this.listProductsRepository.remove(listProducts);
   }
 }

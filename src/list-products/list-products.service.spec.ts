@@ -10,14 +10,17 @@ import {
   MockListProduct,
   MockRepository,
   MockShoppingList,
+  MockConnection,
 } from '../../test/mocks';
 import * as faker from 'faker';
+import { Connection } from 'typeorm';
 
 describe('ListProductsService', () => {
   let service: ListProductsService;
 
   const mockListProductsRepository = new MockRepository();
   const mockShoppingListsRepository = new MockRepository();
+  const mockConnection = new MockConnection();
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -33,6 +36,10 @@ describe('ListProductsService', () => {
           provide: getRepositoryToken(ShoppingList),
           useValue: mockShoppingListsRepository,
         },
+        {
+          provide: Connection,
+          useValue: mockConnection,
+        },
       ],
     }).compile();
 
@@ -42,9 +49,11 @@ describe('ListProductsService', () => {
   });
 
   describe('findAll', () => {
-    const mockListProducts: ListProduct[] = [];
+    let mockListProducts: ListProduct[];
 
     beforeEach(() => {
+      mockListProducts = [];
+
       for (let i = 0; i < 5; i++) {
         const listProduct = new MockListProduct();
         mockListProducts.push(listProduct);
@@ -62,12 +71,38 @@ describe('ListProductsService', () => {
     });
   });
 
+  describe('findAllByIds', () => {
+    let mockListProducts: ListProduct[];
+
+    beforeEach(() => {
+      mockListProducts = [];
+
+      for (let i = 0; i < 5; i++) {
+        const listProduct = new MockListProduct();
+        mockListProducts.push(listProduct);
+      }
+    });
+
+    it('should receive 2 Ids and return their List Produts', async () => {
+      const products = [mockListProducts[0], mockListProducts[1]];
+      const ids = products.map((item) => item.id);
+      mockListProductsRepository.find.mockReturnValue(products);
+
+      const listProducts = await service.findAllByIds(ids);
+
+      expect(listProducts).toBeDefined();
+      expect(listProducts).toHaveLength(2);
+      expect(mockListProductsRepository.find).toHaveBeenCalledTimes(1);
+    });
+  });
+
   describe('findAllByShoppingList', () => {
     let mockShoppingList: ShoppingList;
-    const mockListProducts: ListProduct[] = [];
+    let mockListProducts: ListProduct[];
 
     beforeEach(() => {
       mockShoppingList = new MockShoppingList();
+      mockListProducts = [];
 
       for (let i = 0; i < 5; i++) {
         const listProduct = new MockListProduct(mockShoppingList);
@@ -88,10 +123,123 @@ describe('ListProductsService', () => {
     });
   });
 
-  describe('findOne', () => {
-    const mockListProducts: ListProduct[] = [];
+  describe('findAllPendingByShoppingLists', () => {
+    let mockShoppingLists: ShoppingList[];
+    let listProducts: ListProduct[];
 
     beforeEach(() => {
+      mockShoppingLists = [];
+      listProducts = [];
+
+      //Creates 3 Shopping Lists
+      for (let i = 0; i < 3; i++) {
+        const mockShoppingList = new MockShoppingList();
+
+        mockShoppingLists.push(mockShoppingList);
+      }
+
+      //Will create a structure as below:
+      /*
+        shoppingLists: [
+          shoppingList0 { 
+            listProducts: [
+              product0: {
+                name: Purchased,
+                purchased: true
+              },
+              product3: {
+                name: Not Purchased,
+                purchased: false
+              },
+              product6: {
+                name: Purchased,
+                purchased: true
+              },
+              product9: {
+                name: Not Purchased,
+                purchased: false
+              },
+            ]
+          },
+          shoppingList1 { 
+            listProducts: [
+              product1: {
+                name: Not Purchased,
+                purchased: false
+              },
+              product4: {
+                name: Purchased,
+                purchased: true
+              },
+               product7: {
+                name: Not Purchased,
+                purchased: false
+              },
+               product4: {
+                name: Purchased,
+                purchased: true
+              },
+            ]
+          },
+          shoppingList2 { 
+            listProducts: [
+              product2: {
+                name: Purchased,
+                purchased: true
+              },
+              product5: {
+                name: Not Purchased,
+                purchased: false
+              },
+              product8: {
+                name: Purchased,
+                purchased: true
+              },
+              product11: {
+                name: Not Purchased,
+                purchased: false
+              },
+            ]
+          }
+        ]
+      */
+      let index = 0;
+      for (let i = 0; i < 12; i++) {
+        if (index === 3) index = 0;
+
+        const shoppingList = mockShoppingLists[index++];
+
+        const listProduct = new MockListProduct(
+          shoppingList,
+          i % 2 === 0 ? 'Purchased' : 'Not Purchased',
+        );
+        listProduct.purchased = i % 2 === 0;
+
+        listProducts.push(listProduct);
+      }
+    });
+
+    it('should return all List Produts not purchased from a Shopping List', async () => {
+      const shoppingListsId = mockShoppingLists.map((item) => item.id);
+      const pendingListProducts = listProducts.filter((item) => item.purchased);
+      mockListProductsRepository.find.mockReturnValue(pendingListProducts);
+
+      const products = await service.findAllPendingByShoppingLists(
+        shoppingListsId,
+      );
+
+      expect(products).toBeDefined();
+      expect(products).toHaveLength(6);
+      expect(mockListProductsRepository.find).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('findOne', () => {
+    let mockListProducts: ListProduct[];
+
+    beforeEach(() => {
+      mockListProducts = [];
+
       for (let i = 0; i < 5; i++) {
         const listProduct = new MockListProduct();
         mockListProducts.push(listProduct);
@@ -112,10 +260,11 @@ describe('ListProductsService', () => {
 
   describe('findOneByShoppingList', () => {
     let mockShoppingList: ShoppingList;
-    const mockListProducts: ListProduct[] = [];
+    let mockListProducts: ListProduct[];
 
     beforeEach(() => {
       mockShoppingList = new MockShoppingList();
+      mockListProducts = [];
 
       for (let i = 0; i < 5; i++) {
         const listProduct = new MockListProduct(mockShoppingList);
@@ -229,7 +378,7 @@ describe('ListProductsService', () => {
     });
   });
 
-  describe('remove', () => {
+  describe('delete', () => {
     let mockShoppingList: ShoppingList;
     let mockListProduct: ListProduct;
 
@@ -261,6 +410,32 @@ describe('ListProductsService', () => {
       }
       expect(mockListProductsRepository.findOne).toHaveBeenCalledTimes(1);
       expect(mockListProductsRepository.delete).toHaveBeenCalledTimes(0);
+    });
+  });
+
+  describe('removeMany', () => {
+    let mockShoppingList: ShoppingList;
+    let mockListProducts: ListProduct[];
+
+    beforeEach(() => {
+      mockShoppingList = new MockShoppingList();
+      mockListProducts = [];
+
+      for (let i = 0; i < 5; i++) {
+        const mockListProduct = new MockListProduct(mockShoppingList);
+        mockListProducts.push(mockListProduct);
+      }
+    });
+
+    it('should receive a list of Ids and remove their List Products', async () => {
+      const products = [mockListProducts[0], mockListProducts[1]];
+      const ids = products.map((item) => item.id);
+      mockListProductsRepository.find.mockReturnValue(products);
+      mockListProductsRepository.delete.mockReturnValue(Promise.resolve());
+
+      expect(await service.removeMany(ids)).resolves;
+      expect(mockListProductsRepository.find).toHaveBeenCalledTimes(1);
+      expect(mockListProductsRepository.remove).toHaveBeenCalledTimes(1);
     });
   });
 });

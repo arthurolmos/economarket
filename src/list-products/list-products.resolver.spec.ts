@@ -11,14 +11,17 @@ import {
   MockRepository,
   MockListProduct,
   MockShoppingList,
+  MockConnection,
 } from '../../test/mocks';
 import * as faker from 'faker';
+import { Connection } from 'typeorm';
 
 describe('ListProductsResolver', () => {
   let resolver: ListProductsResolver;
 
   const mockListProductsRepository = new MockRepository();
   const mockShoppingListsRepository = new MockRepository();
+  const mockConnection = new MockConnection();
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -34,6 +37,10 @@ describe('ListProductsResolver', () => {
           provide: getRepositoryToken(ShoppingList),
           useValue: mockShoppingListsRepository,
         },
+        {
+          provide: Connection,
+          useValue: mockConnection,
+        },
       ],
     }).compile();
 
@@ -43,9 +50,11 @@ describe('ListProductsResolver', () => {
   });
 
   describe('getListProducts', () => {
-    const mockListProducts: ListProduct[] = [];
+    let mockListProducts: ListProduct[];
 
     beforeAll(() => {
+      mockListProducts = [];
+
       for (let i = 0; i < 5; i++) {
         const listProduct = new MockListProduct();
         mockListProducts.push(listProduct);
@@ -65,10 +74,11 @@ describe('ListProductsResolver', () => {
 
   describe('getListProductsByShoppingList', () => {
     let mockShoppingList: ShoppingList;
-    const mockListProducts: ListProduct[] = [];
+    let mockListProducts: ListProduct[];
 
     beforeEach(() => {
       mockShoppingList = new MockShoppingList();
+      mockListProducts = [];
 
       for (let i = 0; i < 5; i++) {
         const listProduct = new MockListProduct(mockShoppingList);
@@ -91,9 +101,11 @@ describe('ListProductsResolver', () => {
   });
 
   describe('getListProduct', () => {
-    const mockListProducts: ListProduct[] = [];
+    let mockListProducts: ListProduct[];
 
     beforeEach(() => {
+      mockListProducts = [];
+
       for (let i = 0; i < 5; i++) {
         const listProduct = new MockListProduct();
         mockListProducts.push(listProduct);
@@ -115,10 +127,11 @@ describe('ListProductsResolver', () => {
 
   describe('getListProductByShoppingList', () => {
     let mockShoppingList: ShoppingList;
-    const mockListProducts: ListProduct[] = [];
+    let mockListProducts: ListProduct[];
 
     beforeEach(() => {
       mockShoppingList = new MockShoppingList();
+      mockListProducts = [];
 
       for (let i = 0; i < 12; i++) {
         const listProduct = new MockListProduct(mockShoppingList);

@@ -7,14 +7,16 @@ import { UserCreateInput } from './inputs/user-create.input';
 import { UserUpdateInput } from './inputs/user-update.input';
 import { ShoppingListsService } from '../shopping-lists/shopping-lists.service';
 import { ShoppingList } from '../shopping-lists/shopping-list.entity';
-import { MockRepository, MockUser } from '../../test/mocks';
+import { MockRepository, MockUser, MockConnection } from '../../test/mocks';
 import * as faker from 'faker';
+import { Connection } from 'typeorm';
 
 describe('UsersResolver', () => {
   let resolver: UsersResolver;
 
   const mockRepository = new MockRepository();
   const mockShoppingListsRepository = new MockRepository();
+  const mockConnection = new MockConnection<ShoppingList>();
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -30,6 +32,10 @@ describe('UsersResolver', () => {
           provide: getRepositoryToken(ShoppingList),
           useValue: mockShoppingListsRepository,
         },
+        {
+          provide: Connection,
+          useValue: mockConnection,
+        },
       ],
     }).compile();
 
@@ -39,9 +45,11 @@ describe('UsersResolver', () => {
   });
 
   describe('getUsers', () => {
-    const mockUsers: User[] = [];
+    let mockUsers: User[];
 
     beforeEach(() => {
+      mockUsers = [];
+
       for (let i = 0; i < 5; i++) {
         const user = new MockUser();
 

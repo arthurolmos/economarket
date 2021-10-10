@@ -207,4 +207,25 @@ export class ShoppingListsResolver {
       console.log('Error on deleting shopping list', err);
     }
   }
+
+  @Mutation(() => ShoppingList)
+  async createShoppingListFromPendingProducts(
+    @Args({ name: 'ids', type: () => [String] })
+    ids: string[],
+    @Args('userId') userId: string,
+    @Args({ name: 'remove', type: () => Boolean }) remove = false,
+  ) {
+    try {
+      const shoppingList =
+        await this.shoppingListsService.createShoppingListFromPendingProducts(
+          ids,
+          userId,
+          remove,
+        );
+
+      return shoppingList;
+    } catch (err) {
+      console.log('Error on creating shopping list', err);
+    }
+  }
 }

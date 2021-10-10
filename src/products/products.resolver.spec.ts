@@ -39,9 +39,11 @@ describe('ProductsResolver', () => {
   });
 
   describe('getProducts', () => {
-    const mockProducts: Product[] = [];
+    let mockProducts: Product[];
 
     beforeEach(() => {
+      mockProducts = [];
+
       for (let i = 0; i < 5; i++) {
         const product = new MockProduct();
         mockProducts.push(product);
@@ -60,10 +62,11 @@ describe('ProductsResolver', () => {
 
   describe('getProductsByUser', () => {
     let mockUser: User;
-    const mockProducts: Product[] = [];
+    let mockProducts: Product[];
 
     beforeEach(() => {
       mockUser = new MockUser();
+      mockProducts = [];
 
       for (let i = 0; i < 5; i++) {
         const product = new MockProduct(mockUser);

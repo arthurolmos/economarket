@@ -9,16 +9,23 @@ import { ShoppingListsCreateInput } from './inputs/shopping-lists-create.input';
 import { ShoppingListsUpdateInput } from './inputs/shopping-lists-update.input';
 import { ListProductsService } from '../list-products/list-products.service';
 import { ListProduct } from '../list-products/list-product.entity';
-import { MockRepository, MockShoppingList, MockUser } from '../../test/mocks';
-
+import {
+  MockRepository,
+  MockShoppingList,
+  MockUser,
+  MockListProduct,
+  MockConnection,
+} from '../../test/mocks';
 import * as faker from 'faker';
+import { Connection } from 'typeorm';
 
 describe('ShoppingListsResolver', () => {
   let resolver: ShoppingListsResolver;
 
   const mockShoppingListsRepository = new MockRepository();
-  const mockUserRepository = new MockRepository();
-  const mockListProductRepository = new MockRepository();
+  const mockUsersRepository = new MockRepository();
+  const mockListProductsRepository = new MockRepository();
+  const mockConnection = new MockConnection<ShoppingList>();
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -32,12 +39,16 @@ describe('ShoppingListsResolver', () => {
         UsersService,
         {
           provide: getRepositoryToken(User),
-          useValue: mockUserRepository,
+          useValue: mockUsersRepository,
         },
         ListProductsService,
         {
           provide: getRepositoryToken(ListProduct),
-          useValue: mockListProductRepository,
+          useValue: mockListProductsRepository,
+        },
+        {
+          provide: Connection,
+          useValue: mockConnection,
         },
       ],
     }).compile();
@@ -48,9 +59,11 @@ describe('ShoppingListsResolver', () => {
   });
 
   describe('getShoppingLists', () => {
-    const mockShoppingLists: ShoppingList[] = [];
+    let mockShoppingLists: ShoppingList[];
 
     beforeEach(() => {
+      mockShoppingLists = [];
+
       for (let i = 0; i < 5; i++) {
         const shoppingList = new MockShoppingList();
         mockShoppingLists.push(shoppingList);
@@ -70,10 +83,11 @@ describe('ShoppingListsResolver', () => {
 
   describe('getShoppingListsByUser', () => {
     let mockUser: User;
-    const mockShoppingLists: ShoppingList[] = [];
+    let mockShoppingLists: ShoppingList[];
 
     beforeEach(() => {
       mockUser = new MockUser();
+      mockShoppingLists = [];
 
       for (let i = 0; i < 5; i++) {
         const shoppingList = new MockShoppingList(mockUser);
@@ -157,7 +171,7 @@ describe('ShoppingListsResolver', () => {
       };
       mockShoppingList = new MockShoppingList(mockUser, mockData.name, false);
       mockShoppingListsRepository.save.mockReturnValue(mockShoppingList);
-      mockUserRepository.findOne.mockReturnValue(mockUser);
+      mockUsersRepository.findOne.mockReturnValue(mockUser);
 
       const shoppingList = await resolver.createShoppingList(
         mockData,
@@ -167,7 +181,7 @@ describe('ShoppingListsResolver', () => {
       expect(shoppingList).toBeDefined();
       expect(shoppingList).toEqual(mockShoppingList);
       expect(mockShoppingListsRepository.save).toHaveBeenCalledTimes(1);
-      expect(mockUserRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(mockUsersRepository.findOne).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -233,10 +247,12 @@ describe('ShoppingListsResolver', () => {
   });
 
   describe('shareShoppingList', () => {
-    const mockUsers: User[] = [];
+    let mockUsers: User[];
     let mockShoppingList: ShoppingList;
 
     beforeEach(() => {
+      mockUsers = [];
+
       for (let i = 0; i < 5; i++) {
         const mockUser = new MockUser();
         mockUsers.push(mockUser);
@@ -248,7 +264,7 @@ describe('ShoppingListsResolver', () => {
       const user = mockUsers[1];
       const userId = user.id;
       mockShoppingList.sharedUsers = [user];
-      mockUserRepository.findOne.mockReturnValue(userId);
+      mockUsersRepository.findOne.mockReturnValue(userId);
       mockShoppingListsRepository.findOne.mockReturnValue(mockShoppingList);
       mockShoppingListsRepository.save.mockReturnValue(mockShoppingList);
 
@@ -265,10 +281,12 @@ describe('ShoppingListsResolver', () => {
   });
 
   describe('unshareShoppingList', () => {
-    const mockUsers: User[] = [];
+    let mockUsers: User[];
     let mockShoppingList: ShoppingList;
 
     beforeEach(() => {
+      mockUsers = [];
+
       for (let i = 0; i < 5; i++) {
         const mockUser = new MockUser();
         mockUsers.push(mockUser);
@@ -282,7 +300,7 @@ describe('ShoppingListsResolver', () => {
 
       const user = mockUsers[2];
       const userId = user.id;
-      mockUserRepository.findOne.mockReturnValue(user);
+      mockUsersRepository.findOne.mockReturnValue(user);
       mockShoppingListsRepository.findOne.mockReturnValue(mockShoppingList);
       mockShoppingListsRepository.save.mockReturnValue(mockShoppingList);
 
@@ -293,7 +311,7 @@ describe('ShoppingListsResolver', () => {
 
       expect(shoppingList).toBeDefined();
       expect(shoppingList.sharedUsers.length).toEqual(1);
-      expect(mockUserRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(mockUsersRepository.findOne).toHaveBeenCalledTimes(1);
       expect(mockShoppingListsRepository.save).toHaveBeenCalledTimes(1);
       expect(mockShoppingListsRepository.findOne).toHaveBeenCalledTimes(1);
     });
@@ -351,10 +369,12 @@ describe('ShoppingListsResolver', () => {
   });
 
   describe('leaveSharedShoppingList', () => {
-    const mockUsers: User[] = [];
+    let mockUsers: User[];
     let mockShoppingList: ShoppingList;
 
     beforeEach(() => {
+      mockUsers = [];
+
       for (let i = 0; i < 5; i++) {
         const mockUser = new MockUser();
         mockUsers.push(mockUser);
@@ -367,7 +387,7 @@ describe('ShoppingListsResolver', () => {
 
       const user = mockUsers[2];
       const userId = user.id;
-      mockUserRepository.findOne.mockReturnValue(user);
+      mockUsersRepository.findOne.mockReturnValue(user);
       mockShoppingListsRepository.findOne.mockReturnValue(mockShoppingList);
       mockShoppingListsRepository.save.mockReturnValue(mockShoppingList);
 
@@ -380,7 +400,96 @@ describe('ShoppingListsResolver', () => {
       expect(shoppingList.sharedUsers.length).toEqual(1);
       expect(mockShoppingListsRepository.findOne).toHaveBeenCalledTimes(1);
       expect(mockShoppingListsRepository.save).toHaveBeenCalledTimes(1);
-      expect(mockUserRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(mockUsersRepository.findOne).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('createShoppingListFromPendingProducts', () => {
+    let mockUser: User;
+    let mockShoppingLists: ShoppingList[];
+    let mockListProducts: ListProduct[];
+
+    beforeEach(() => {
+      mockUser = new MockUser();
+      mockShoppingLists = [];
+      mockListProducts = [];
+
+      for (let i = 0; i < 2; i++) {
+        const mockShoppingList = new MockShoppingList(mockUser);
+        mockShoppingLists.push(mockShoppingList);
+      }
+
+      for (let i = 0; i < 6; i++) {
+        const mockListProduct = new MockListProduct(
+          i < 3 ? mockShoppingLists[0] : mockShoppingLists[1],
+        );
+        mockListProduct.purchased = i % 2 === 0;
+        mockListProducts.push(mockListProduct);
+      }
+    });
+
+    it('should create a new Shopping List containing the three peding itens from other 2 lists', async () => {
+      const ids = mockShoppingLists.map((item) => item.id);
+      const userId = mockUser.id;
+      const listProductsPending = mockListProducts.filter(
+        (item) => !item.purchased,
+      );
+      const mockShoppingList = new MockShoppingList(mockUser);
+      mockShoppingList.listProducts = listProductsPending;
+      const manager = new MockRepository();
+      manager.findOne.mockReturnValue(mockUser);
+      manager.find.mockReturnValue(listProductsPending);
+      manager.save.mockReturnValue(mockShoppingList);
+      mockConnection.transaction.mockImplementation(async (cb) => {
+        const shoppingList = await cb(manager);
+
+        return shoppingList;
+      });
+
+      const shoppingList = await resolver.createShoppingListFromPendingProducts(
+        ids,
+        userId,
+      );
+
+      expect(shoppingList).toBeDefined();
+      expect(shoppingList.listProducts).toHaveLength(3);
+      expect(manager.findOne).toHaveBeenCalledTimes(1);
+      expect(manager.find).toHaveBeenCalledTimes(1);
+      expect(manager.save).toHaveBeenCalledTimes(1);
+      expect(manager.remove).toHaveBeenCalledTimes(0);
+    });
+
+    it('should create a new Shopping List containing the three peding itens from other 2 lists, and remove them from the original lists', async () => {
+      const ids = mockShoppingLists.map((item) => item.id);
+      const userId = mockUser.id;
+      const listProductsPending = mockListProducts.filter(
+        (item) => !item.purchased,
+      );
+      const mockShoppingList = new MockShoppingList(mockUser);
+      mockShoppingList.listProducts = listProductsPending;
+      const manager = new MockRepository();
+      manager.findOne.mockReturnValue(mockUser);
+      manager.find.mockReturnValue(listProductsPending);
+      manager.save.mockReturnValue(mockShoppingList);
+      manager.remove.mockReturnValue(Promise.resolve);
+      mockConnection.transaction.mockImplementation(async (cb) => {
+        const shoppingList = await cb(manager);
+
+        return shoppingList;
+      });
+
+      const shoppingList = await resolver.createShoppingListFromPendingProducts(
+        ids,
+        userId,
+        true,
+      );
+
+      expect(shoppingList).toBeDefined();
+      expect(shoppingList.listProducts).toHaveLength(3);
+      expect(manager.findOne).toHaveBeenCalledTimes(1);
+      expect(manager.find).toHaveBeenCalledTimes(1);
+      expect(manager.save).toHaveBeenCalledTimes(1);
+      expect(manager.remove).toHaveBeenCalledTimes(1);
     });
   });
 });

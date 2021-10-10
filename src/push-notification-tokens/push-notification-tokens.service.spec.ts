@@ -34,9 +34,11 @@ describe('PushNotificationTokensService', () => {
   });
 
   describe('findAll', () => {
-    const pushNotificationTokens: PushNotificationToken[] = [];
+    let pushNotificationTokens: PushNotificationToken[];
 
     beforeEach(() => {
+      pushNotificationTokens = [];
+
       for (let i = 0; i < 5; i++) {
         const pushNotificationToken = new MockPushNotificationToken();
         pushNotificationTokens.push(pushNotificationToken);
@@ -60,10 +62,11 @@ describe('PushNotificationTokensService', () => {
 
   describe('findAllByUser', () => {
     let mockUser: User;
-    const pushNotificationTokens: PushNotificationToken[] = [];
+    let pushNotificationTokens: PushNotificationToken[];
 
     beforeEach(() => {
       mockUser = new MockUser();
+      pushNotificationTokens = [];
 
       for (let i = 0; i < 2; i++) {
         const pushNotificationToken = new MockPushNotificationToken(mockUser);
@@ -89,11 +92,13 @@ describe('PushNotificationTokensService', () => {
 
   describe('findAllByToken', () => {
     let mockUser: User;
-    const token = 'token';
-    const pushNotificationTokens: PushNotificationToken[] = [];
+    let token: string;
+    let pushNotificationTokens: PushNotificationToken[];
 
     beforeEach(() => {
       mockUser = new MockUser();
+      token = 'token';
+      pushNotificationTokens = [];
 
       for (let i = 0; i < 2; i++) {
         const pushNotificationToken = new MockPushNotificationToken(

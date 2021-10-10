@@ -34,9 +34,11 @@ describe('NotificationsService', () => {
   });
 
   describe('findAll', () => {
-    const mockNotifications: Notification[] = [];
+    let mockNotifications: Notification[];
 
     beforeEach(() => {
+      mockNotifications = [];
+
       for (let i = 0; i < 5; i++) {
         const notification = new MockNotification();
         mockNotifications.push(notification);
@@ -56,9 +58,11 @@ describe('NotificationsService', () => {
 
   describe('findAllByUser', () => {
     let mockUser: User;
-    const mockNotifications: Notification[] = [];
+    let mockNotifications: Notification[];
 
     beforeEach(() => {
+      mockNotifications = [];
+
       mockUser = new MockUser();
       for (let i = 0; i < 5; i++) {
         const notification = new MockNotification(mockUser);

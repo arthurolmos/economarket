@@ -5,3 +5,4 @@ export * from './MockProduct';
 export * from './MockNotification';
 export * from './MockListProduct';
 export * from './MockPushNotificationToken';
+export * from './MockConnection';

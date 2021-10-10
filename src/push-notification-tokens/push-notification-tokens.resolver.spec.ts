@@ -38,9 +38,11 @@ describe('PushNotificationTokensResolver', () => {
   });
 
   describe('getPushNotificationTokens', () => {
-    const pushNotificationTokens: PushNotificationToken[] = [];
+    let pushNotificationTokens: PushNotificationToken[];
 
     beforeEach(() => {
+      pushNotificationTokens = [];
+
       for (let i = 0; i < 5; i++) {
         const pushNotificationToken = new MockPushNotificationToken();
         pushNotificationTokens.push(pushNotificationToken);

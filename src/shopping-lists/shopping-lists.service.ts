@@ -1,16 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../users/user.entity';
-import { Brackets, Repository } from 'typeorm';
+import { Brackets, Connection, Repository, In } from 'typeorm';
 import { ShoppingListsCreateInput } from './inputs/shopping-lists-create.input';
 import { ShoppingListsUpdateInput } from './inputs/shopping-lists-update.input';
 import { ShoppingList } from './shopping-list.entity';
+import { ListProduct } from '../list-products/list-product.entity';
+import { ListProductsCreateInput } from '../list-products/inputs/list-products-create.input';
 
 @Injectable()
 export class ShoppingListsService {
   constructor(
     @InjectRepository(ShoppingList)
     private shoppingListsRepository: Repository<ShoppingList>,
+    private connection: Connection,
   ) {}
 
   findAll(): Promise<ShoppingList[]> {
@@ -63,13 +66,61 @@ export class ShoppingListsService {
   async create(
     data: ShoppingListsCreateInput,
     user: User,
+    listProducts?: ListProductsCreateInput[],
   ): Promise<ShoppingList> {
     const shoppingList = new ShoppingList();
 
     Object.assign(shoppingList, data);
+    shoppingList.listProducts = listProducts as ListProduct[];
     shoppingList.user = user;
 
     return await this.shoppingListsRepository.save(shoppingList);
+  }
+
+  async createShoppingListFromPendingProducts(
+    ids: string[],
+    userId: string,
+    remove: boolean,
+  ) {
+    return await this.connection.transaction(async (manager) => {
+      const user = await manager.findOne<User>(User, userId);
+      if (!user) throw new Error('User not found!');
+
+      const listProductsPending = await manager.find<ListProduct>(ListProduct, {
+        where: { shoppingList: In(ids), purchased: false },
+      });
+
+      const products = listProductsPending.map((item) => {
+        const listProduct: ListProductsCreateInput = {
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          brand: item.brand,
+          market: item.market,
+          purchased: false,
+        };
+
+        return listProduct;
+      });
+
+      const data: ShoppingListsCreateInput = {
+        name: 'Lista ' + new Date().toLocaleString(),
+        date: new Date(),
+      };
+
+      const shoppingList = new ShoppingList();
+      Object.assign(shoppingList, data);
+      shoppingList.listProducts = products as ListProduct[];
+      shoppingList.user = user;
+
+      await manager.save(shoppingList);
+
+      if (remove) {
+        await manager.remove<ListProduct>(ListProduct, listProductsPending);
+      }
+
+      return shoppingList;
+    });
   }
 
   async update(

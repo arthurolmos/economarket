@@ -50,9 +50,11 @@ describe('NotificationsResolver', () => {
   });
 
   describe('getNotifications', () => {
-    const mockNotifications: Notification[] = [];
+    let mockNotifications: Notification[];
 
     beforeEach(() => {
+      mockNotifications = [];
+
       for (let i = 0; i < 5; i++) {
         const notification = new MockNotification();
         mockNotifications.push(notification);
@@ -71,10 +73,11 @@ describe('NotificationsResolver', () => {
 
   describe('getNotificationsByUser', () => {
     let mockUser: User;
-    const mockNotifications: Notification[] = [];
+    let mockNotifications: Notification[];
 
     beforeEach(() => {
       mockUser = new User();
+      mockNotifications = [];
 
       for (let i = 0; i < 5; i++) {
         const notification = new MockNotification(mockUser);

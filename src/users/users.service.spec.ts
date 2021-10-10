@@ -28,9 +28,11 @@ describe('UsersService', () => {
   });
 
   describe('findAll', () => {
-    const mockUsers: User[] = [];
+    let mockUsers: User[];
 
     beforeEach(() => {
+      mockUsers = [];
+
       for (let i = 0; i < 5; i++) {
         const user = new MockUser();
 
@@ -50,9 +52,11 @@ describe('UsersService', () => {
   });
 
   describe('findAllById', () => {
-    const mockUsers: User[] = [];
+    let mockUsers: User[];
 
     beforeEach(() => {
+      mockUsers = [];
+
       for (let i = 0; i < 5; i++) {
         const user = new MockUser();
         mockUsers.push(user);
@@ -72,9 +76,11 @@ describe('UsersService', () => {
   });
 
   describe('findAllByEmail', () => {
-    const mockUsers: User[] = [];
+    let mockUsers: User[];
 
     beforeEach(() => {
+      mockUsers = [];
+
       for (let i = 0; i < 5; i++) {
         const user = new MockUser();
         mockUsers.push(user);

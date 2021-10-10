@@ -8,15 +8,23 @@ import { ShoppingListsCreateInput } from './inputs/shopping-lists-create.input';
 import { ShoppingListsUpdateInput } from './inputs/shopping-lists-update.input';
 import { ListProductsService } from '../list-products/list-products.service';
 import { ListProduct } from '../list-products/list-product.entity';
-import { MockRepository, MockShoppingList, MockUser } from '../../test/mocks';
+import {
+  MockRepository,
+  MockShoppingList,
+  MockUser,
+  MockListProduct,
+  MockConnection,
+} from '../../test/mocks';
 import * as faker from 'faker';
+import { Connection } from 'typeorm';
 
 describe('ShoppingListsService', () => {
   let shoppingListsService: ShoppingListsService;
 
   const mockShoppingListsRepository = new MockRepository();
-  const mockUserRepository = new MockRepository();
-  const mockListProductRepository = new MockRepository();
+  const mockUsersRepository = new MockRepository();
+  const mockListProductsRepository = new MockRepository();
+  const mockConnection = new MockConnection<ShoppingList>();
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -29,12 +37,16 @@ describe('ShoppingListsService', () => {
         UsersService,
         {
           provide: getRepositoryToken(User),
-          useValue: mockUserRepository,
+          useValue: mockUsersRepository,
         },
         ListProductsService,
         {
           provide: getRepositoryToken(ListProduct),
-          useValue: mockListProductRepository,
+          useValue: mockListProductsRepository,
+        },
+        {
+          provide: Connection,
+          useValue: mockConnection,
         },
       ],
     }).compile();
@@ -46,9 +58,11 @@ describe('ShoppingListsService', () => {
   });
 
   describe('findAll', () => {
-    const mockShoppingLists: ShoppingList[] = [];
+    let mockShoppingLists: ShoppingList[];
 
     beforeEach(() => {
+      mockShoppingLists = [];
+
       for (let i = 0; i < 5; i++) {
         const shoppingList = new MockShoppingList();
         mockShoppingLists.push(shoppingList);
@@ -68,10 +82,11 @@ describe('ShoppingListsService', () => {
 
   describe('findAllByUser', () => {
     let mockUser: User;
-    const mockShoppingLists: ShoppingList[] = [];
+    let mockShoppingLists: ShoppingList[];
 
     beforeEach(() => {
       mockUser = new User();
+      mockShoppingLists = [];
 
       for (let i = 0; i < 5; i++) {
         const shoppingList = new MockShoppingList(mockUser);
@@ -101,9 +116,11 @@ describe('ShoppingListsService', () => {
   });
 
   describe('findOne', () => {
-    const mockShoppingLists: ShoppingList[] = [];
+    let mockShoppingLists: ShoppingList[];
 
     beforeEach(() => {
+      mockShoppingLists = [];
+
       for (let i = 0; i < 5; i++) {
         const shoppingList = new MockShoppingList();
         mockShoppingLists.push(shoppingList);
@@ -124,10 +141,11 @@ describe('ShoppingListsService', () => {
 
   describe('findOneByUser', () => {
     let mockUser: User;
-    const mockShoppingLists: ShoppingList[] = [];
+    let mockShoppingLists: ShoppingList[];
 
     beforeEach(() => {
       mockUser = new MockUser();
+      mockShoppingLists = [];
 
       for (let i = 0; i < 5; i++) {
         const shoppingList = new MockShoppingList(mockUser);
@@ -236,10 +254,12 @@ describe('ShoppingListsService', () => {
   });
 
   describe('addSharedUsersToShoppingList', () => {
-    const mockUsers: User[] = [];
+    let mockUsers: User[];
     let mockShoppingList: ShoppingList;
 
     beforeEach(() => {
+      mockUsers = [];
+
       for (let i = 0; i < 5; i++) {
         const mockUser = new MockUser();
         mockUsers.push(mockUser);
@@ -279,10 +299,12 @@ describe('ShoppingListsService', () => {
   });
 
   describe('unshareShoppingList', () => {
-    const mockUsers: User[] = [];
+    let mockUsers: User[];
     let mockShoppingList: ShoppingList;
 
     beforeEach(() => {
+      mockUsers = [];
+
       for (let i = 0; i < 5; i++) {
         const mockUser = new MockUser();
         mockUsers.push(mockUser);
@@ -339,6 +361,98 @@ describe('ShoppingListsService', () => {
 
       expect(shoppingListsService.delete(id)).resolves;
       expect(mockShoppingListsRepository.delete).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('createShoppingListFromPendingProducts', () => {
+    let mockUser: User;
+    let mockShoppingLists: ShoppingList[];
+    let mockListProducts: ListProduct[];
+
+    beforeEach(() => {
+      mockUser = new MockUser();
+      mockShoppingLists = [];
+      mockListProducts = [];
+
+      for (let i = 0; i < 2; i++) {
+        const mockShoppingList = new MockShoppingList(mockUser);
+        mockShoppingLists.push(mockShoppingList);
+      }
+
+      for (let i = 0; i < 6; i++) {
+        const mockListProduct = new MockListProduct(
+          i < 3 ? mockShoppingLists[0] : mockShoppingLists[1],
+        );
+        mockListProduct.purchased = i % 2 === 0;
+        mockListProducts.push(mockListProduct);
+      }
+    });
+
+    it('should create a new Shopping List containing the three peding itens from other 2 lists', async () => {
+      const ids = mockShoppingLists.map((item) => item.id);
+      const userId = mockUser.id;
+      const listProductsPending = mockListProducts.filter(
+        (item) => !item.purchased,
+      );
+      const mockShoppingList = new MockShoppingList(mockUser);
+      mockShoppingList.listProducts = listProductsPending;
+      const manager = new MockRepository();
+      manager.findOne.mockReturnValue(mockUser);
+      manager.find.mockReturnValue(listProductsPending);
+      manager.save.mockReturnValue(mockShoppingList);
+      mockConnection.transaction.mockImplementation(async (cb) => {
+        const shoppingList = await cb(manager);
+
+        return shoppingList;
+      });
+
+      const shoppingList =
+        await shoppingListsService.createShoppingListFromPendingProducts(
+          ids,
+          userId,
+          false,
+        );
+
+      expect(shoppingList).toBeDefined();
+      expect(shoppingList.listProducts).toHaveLength(3);
+      expect(manager.findOne).toHaveBeenCalledTimes(1);
+      expect(manager.find).toHaveBeenCalledTimes(1);
+      expect(manager.save).toHaveBeenCalledTimes(1);
+      expect(manager.remove).toHaveBeenCalledTimes(0);
+    });
+
+    it('should create a new Shopping List containing the three peding itens from other 2 lists, and remove them from the original lists', async () => {
+      const ids = mockShoppingLists.map((item) => item.id);
+      const userId = mockUser.id;
+      const listProductsPending = mockListProducts.filter(
+        (item) => !item.purchased,
+      );
+      const mockShoppingList = new MockShoppingList(mockUser);
+      mockShoppingList.listProducts = listProductsPending;
+      const manager = new MockRepository();
+      manager.findOne.mockReturnValue(mockUser);
+      manager.find.mockReturnValue(listProductsPending);
+      manager.save.mockReturnValue(mockShoppingList);
+      manager.remove.mockReturnValue(Promise.resolve);
+      mockConnection.transaction.mockImplementation(async (cb) => {
+        const shoppingList = await cb(manager);
+
+        return shoppingList;
+      });
+
+      const shoppingList =
+        await shoppingListsService.createShoppingListFromPendingProducts(
+          ids,
+          userId,
+          true,
+        );
+
+      expect(shoppingList).toBeDefined();
+      expect(shoppingList.listProducts).toHaveLength(3);
+      expect(manager.findOne).toHaveBeenCalledTimes(1);
+      expect(manager.find).toHaveBeenCalledTimes(1);
+      expect(manager.save).toHaveBeenCalledTimes(1);
+      expect(manager.remove).toHaveBeenCalledTimes(1);
     });
   });
 });

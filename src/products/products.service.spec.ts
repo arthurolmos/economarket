@@ -35,9 +35,11 @@ describe('ProductsService', () => {
   });
 
   describe('findAll', () => {
-    const mockProducts: Product[] = [];
+    let mockProducts: Product[];
 
     beforeEach(() => {
+      mockProducts = [];
+
       for (let i = 0; i < 5; i++) {
         const product = new MockProduct();
         mockProducts.push(product);
@@ -57,9 +59,10 @@ describe('ProductsService', () => {
 
   describe('findAllByUser', () => {
     let mockUser: User;
-    const mockProducts: Product[] = [];
+    let mockProducts: Product[];
 
     beforeEach(() => {
+      mockProducts = [];
       mockUser = new MockUser();
 
       for (let i = 0; i < 5; i++) {
