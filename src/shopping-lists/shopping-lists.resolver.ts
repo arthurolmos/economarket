@@ -228,4 +228,23 @@ export class ShoppingListsResolver {
       console.log('Error on creating shopping list', err);
     }
   }
+
+  @Mutation(() => ShoppingList)
+  async createShoppingListFromShoppingLists(
+    @Args({ name: 'ids', type: () => [String] })
+    ids: string[],
+    @Args('userId') userId: string,
+  ) {
+    try {
+      const shoppingList =
+        await this.shoppingListsService.createShoppingListFromShoppingLists(
+          ids,
+          userId,
+        );
+
+      return shoppingList;
+    } catch (err) {
+      console.log('Error on creating shopping list', err);
+    }
+  }
 }

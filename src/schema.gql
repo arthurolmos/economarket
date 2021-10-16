@@ -119,7 +119,7 @@ type Mutation {
   unshareShoppingList(userId: String!, id: String!): ShoppingList!
   leaveSharedShoppingList(userId: String!, id: String!): ShoppingList!
   deleteShoppingList(userId: String!, id: String!): String!
-  createShoppingListFromPendingItems(remove: Boolean!, userId: String!, ids: [String!]!): ShoppingList!
+  createShoppingListFromPendingProducts(remove: Boolean!, userId: String!, ids: [String!]!): ShoppingList!
   createListProduct(shoppingListId: String!, data: ListProductsCreateInput!): ListProduct!
   updateListProduct(shoppingListId: String!, values: ListProductsUpdateInput!, id: String!): ListProduct!
   deleteListProduct(shoppingListId: String!, id: String!): String!

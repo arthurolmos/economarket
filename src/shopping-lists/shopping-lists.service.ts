@@ -123,6 +123,56 @@ export class ShoppingListsService {
     });
   }
 
+  async createShoppingListFromShoppingLists(ids: string[], userId: string) {
+    return await this.connection.transaction(async (manager) => {
+      const user = await manager.findOne<User>(User, userId);
+      if (!user) throw new Error('User not found!');
+
+      const listProducts = await manager.find<ListProduct>(ListProduct, {
+        where: { shoppingList: In(ids) },
+        order: { name: 'DESC' },
+      });
+
+      const products: ListProductsCreateInput[] = [];
+      listProducts.forEach((item) => {
+        const index = products.findIndex(
+          (product) => product.name === item.name,
+        );
+
+        if (index < 0) {
+          const listProduct: ListProductsCreateInput = {
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            brand: item.brand,
+            market: item.market,
+            purchased: false,
+          };
+
+          products.push(listProduct);
+        } else {
+          products[index].quantity += item.quantity;
+        }
+      });
+
+      const data: ShoppingListsCreateInput = {
+        name: 'Lista ' + new Date().toLocaleString(),
+        date: new Date(),
+      };
+
+      const shoppingList = new ShoppingList();
+      Object.assign(shoppingList, data);
+      shoppingList.listProducts = products as ListProduct[];
+      shoppingList.user = user;
+
+      console.log({ shoppingList });
+
+      await manager.save(shoppingList);
+
+      return shoppingList;
+    });
+  }
+
   async update(
     id: string,
     values: ShoppingListsUpdateInput,
