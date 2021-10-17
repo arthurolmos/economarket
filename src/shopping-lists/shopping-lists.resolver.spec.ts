@@ -246,6 +246,34 @@ describe('ShoppingListsResolver', () => {
     });
   });
 
+  describe('reopenShoppingList', () => {
+    let mockUser: User;
+    let mockShoppingList: ShoppingList;
+
+    beforeEach(() => {
+      mockUser = new User();
+      mockShoppingList = new MockShoppingList(mockUser);
+      mockShoppingList.done = true;
+    });
+
+    it('should create a finished Shopping List, update done from true to false, and return it', async () => {
+      const finishedShoppingList = mockShoppingList;
+      finishedShoppingList.done = false;
+      mockShoppingListsRepository.findOne.mockReturnValue(mockShoppingList);
+      mockShoppingListsRepository.save.mockReturnValue(finishedShoppingList);
+
+      const shoppingList = await resolver.reopenShoppingList(
+        mockShoppingList.id,
+        mockUser.id,
+      );
+
+      expect(shoppingList).toBeDefined();
+      expect(shoppingList.done).toEqual(false);
+      expect(mockShoppingListsRepository.save).toHaveBeenCalledTimes(1);
+      expect(mockShoppingListsRepository.findOne).toHaveBeenCalledTimes(1);
+    });
+  });
+
   describe('shareShoppingList', () => {
     let mockUsers: User[];
     let mockShoppingList: ShoppingList;
@@ -453,8 +481,8 @@ describe('ShoppingListsResolver', () => {
       const shoppingList = await resolver.createShoppingListFromPendingProducts(
         ids,
         userId,
-        mockData,
         false,
+        mockData,
       );
 
       expect(shoppingList).toBeDefined();
@@ -491,8 +519,8 @@ describe('ShoppingListsResolver', () => {
       const shoppingList = await resolver.createShoppingListFromPendingProducts(
         ids,
         userId,
-        mockData,
         true,
+        mockData,
       );
 
       expect(shoppingList).toBeDefined();
