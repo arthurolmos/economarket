@@ -214,12 +214,14 @@ export class ShoppingListsResolver {
     ids: string[],
     @Args('userId') userId: string,
     @Args({ name: 'remove', type: () => Boolean }) remove = false,
+    @Args('data') data: ShoppingListsCreateInput,
   ) {
     try {
       const shoppingList =
         await this.shoppingListsService.createShoppingListFromPendingProducts(
           ids,
           userId,
+          data,
           remove,
         );
 
@@ -234,12 +236,14 @@ export class ShoppingListsResolver {
     @Args({ name: 'ids', type: () => [String] })
     ids: string[],
     @Args('userId') userId: string,
+    @Args('data') data: ShoppingListsCreateInput,
   ) {
     try {
       const shoppingList =
         await this.shoppingListsService.createShoppingListFromShoppingLists(
           ids,
           userId,
+          data,
         );
 
       return shoppingList;

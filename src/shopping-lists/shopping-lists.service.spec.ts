@@ -391,6 +391,10 @@ describe('ShoppingListsService', () => {
     it('should create a new Shopping List containing the three peding items from other 2 lists', async () => {
       const ids = mockShoppingLists.map((item) => item.id);
       const userId = mockUser.id;
+      const mockData: ShoppingListsCreateInput = {
+        name: faker.name.firstName(),
+        date: new Date(),
+      };
       const listProductsPending = mockListProducts.filter(
         (item) => !item.purchased,
       );
@@ -410,6 +414,7 @@ describe('ShoppingListsService', () => {
         await shoppingListsService.createShoppingListFromPendingProducts(
           ids,
           userId,
+          mockData,
           false,
         );
 
@@ -424,6 +429,10 @@ describe('ShoppingListsService', () => {
     it('should create a new Shopping List containing the three peding items from other 2 lists, and remove them from the original lists', async () => {
       const ids = mockShoppingLists.map((item) => item.id);
       const userId = mockUser.id;
+      const mockData: ShoppingListsCreateInput = {
+        name: faker.name.firstName(),
+        date: new Date(),
+      };
       const listProductsPending = mockListProducts.filter(
         (item) => !item.purchased,
       );
@@ -444,6 +453,7 @@ describe('ShoppingListsService', () => {
         await shoppingListsService.createShoppingListFromPendingProducts(
           ids,
           userId,
+          mockData,
           true,
         );
 
@@ -483,6 +493,10 @@ describe('ShoppingListsService', () => {
     it('should create a new Shopping List containing all items from other 2 lists', async () => {
       const ids = mockShoppingLists.map((item) => item.id);
       const userId = mockUser.id;
+      const mockData: ShoppingListsCreateInput = {
+        name: faker.name.firstName(),
+        date: new Date(),
+      };
       const mockShoppingList = new MockShoppingList(mockUser);
       mockShoppingList.listProducts = mockListProducts;
       const manager = new MockRepository();
@@ -499,6 +513,7 @@ describe('ShoppingListsService', () => {
         await shoppingListsService.createShoppingListFromShoppingLists(
           ids,
           userId,
+          mockData,
         );
 
       expect(shoppingList).toBeDefined();
@@ -512,6 +527,10 @@ describe('ShoppingListsService', () => {
     it('should create a new Shopping List containing the 6 items, and the repeated items are agglutinated in one', async () => {
       const ids = mockShoppingLists.map((item) => item.id);
       const userId = mockUser.id;
+      const mockData: ShoppingListsCreateInput = {
+        name: faker.name.firstName(),
+        date: new Date(),
+      };
       const productRepeatedA = mockListProducts[3];
       const productRepeatedB = mockListProducts[0];
       const mockShoppingList = new MockShoppingList(mockUser);
@@ -536,6 +555,7 @@ describe('ShoppingListsService', () => {
         await shoppingListsService.createShoppingListFromShoppingLists(
           ids,
           userId,
+          mockData,
         );
 
       expect(shoppingList).toBeDefined();

@@ -80,6 +80,7 @@ export class ShoppingListsService {
   async createShoppingListFromPendingProducts(
     ids: string[],
     userId: string,
+    data: ShoppingListsCreateInput,
     remove: boolean,
   ) {
     return await this.connection.transaction(async (manager) => {
@@ -103,11 +104,6 @@ export class ShoppingListsService {
         return listProduct;
       });
 
-      const data: ShoppingListsCreateInput = {
-        name: 'Lista ' + new Date().toLocaleString(),
-        date: new Date(),
-      };
-
       const shoppingList = new ShoppingList();
       Object.assign(shoppingList, data);
       shoppingList.listProducts = products as ListProduct[];
@@ -123,7 +119,11 @@ export class ShoppingListsService {
     });
   }
 
-  async createShoppingListFromShoppingLists(ids: string[], userId: string) {
+  async createShoppingListFromShoppingLists(
+    ids: string[],
+    userId: string,
+    data: ShoppingListsCreateInput,
+  ) {
     return await this.connection.transaction(async (manager) => {
       const user = await manager.findOne<User>(User, userId);
       if (!user) throw new Error('User not found!');
@@ -154,11 +154,6 @@ export class ShoppingListsService {
           products[index].quantity += item.quantity;
         }
       });
-
-      const data: ShoppingListsCreateInput = {
-        name: 'Lista ' + new Date().toLocaleString(),
-        date: new Date(),
-      };
 
       const shoppingList = new ShoppingList();
       Object.assign(shoppingList, data);
