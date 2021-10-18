@@ -246,7 +246,7 @@ describe('ShoppingListsResolver', () => {
     });
   });
 
-  describe('reopenShoppingList', () => {
+  describe('restoreShoppingList', () => {
     let mockUser: User;
     let mockShoppingList: ShoppingList;
 
@@ -262,7 +262,7 @@ describe('ShoppingListsResolver', () => {
       mockShoppingListsRepository.findOne.mockReturnValue(mockShoppingList);
       mockShoppingListsRepository.save.mockReturnValue(finishedShoppingList);
 
-      const shoppingList = await resolver.reopenShoppingList(
+      const shoppingList = await resolver.restoreShoppingList(
         mockShoppingList.id,
         mockUser.id,
       );

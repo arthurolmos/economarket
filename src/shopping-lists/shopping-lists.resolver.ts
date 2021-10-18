@@ -128,7 +128,7 @@ export class ShoppingListsResolver {
   }
 
   @Mutation(() => ShoppingList)
-  async reopenShoppingList(
+  async restoreShoppingList(
     @Args('id') id: string,
     @Args('userId') userId: string,
   ) {
