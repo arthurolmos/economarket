@@ -1,10 +1,11 @@
 import * as faker from 'faker';
-import { PushNotificationToken } from '../../src/push-notification-tokens/push-notification-token.entity';
+import { User } from '../../../src/users/user.entity';
+import { PushNotificationToken } from '../../../src/push-notification-tokens/push-notification-token.entity';
 import { MockUser } from './MockUser';
 
 export class MockPushNotificationToken extends PushNotificationToken {
   constructor(
-    user = new MockUser(),
+    user: User | MockUser = new MockUser(),
     token = 'ExpoPushToken:' + faker.lorem.words(),
   ) {
     super();

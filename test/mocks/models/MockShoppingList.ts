@@ -1,9 +1,14 @@
 import { MockUser } from './MockUser';
-import { ShoppingList } from '../../src/shopping-lists/shopping-list.entity';
+import { ShoppingList } from '../../../src/shopping-lists/shopping-list.entity';
 import * as faker from 'faker';
+import { User } from '../../../src/users/user.entity';
 
 export class MockShoppingList extends ShoppingList {
-  constructor(user = new MockUser(), name = faker.music.genre(), done = false) {
+  constructor(
+    user: User | MockUser = new MockUser(),
+    name = faker.music.genre(),
+    done = false,
+  ) {
     super();
 
     this.id = faker.datatype.uuid();

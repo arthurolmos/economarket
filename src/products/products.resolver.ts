@@ -1,5 +1,4 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { UsersService } from '../users/users.service';
 import { ProductsCreateInput } from './inputs/products-create.input';
 import { ProductsUpdateInput } from './inputs/products-update.input';
 import { Product } from './product.entity';
@@ -7,10 +6,7 @@ import { ProductsService } from './products.service';
 
 @Resolver(() => Product)
 export class ProductsResolver {
-  constructor(
-    private productsService: ProductsService,
-    private usersService: UsersService,
-  ) {}
+  constructor(private productsService: ProductsService) {}
 
   @Query(() => [Product], { name: 'products' })
   getProducts() {
@@ -45,10 +41,7 @@ export class ProductsResolver {
     @Args('userId') userId: string,
   ) {
     try {
-      const user = await this.usersService.findOne(userId);
-      if (!user) throw new Error('User not found!');
-
-      const product = await this.productsService.create(data, user);
+      const product = await this.productsService.create(data, userId);
 
       return product;
     } catch (err) {

@@ -1,6 +1,6 @@
 import * as faker from 'faker';
-import { ListProduct } from '../../src/list-products/list-product.entity';
-import { MockShoppingList } from '.';
+import { ListProduct } from '../../../src/list-products/list-product.entity';
+import { MockShoppingList } from '..';
 
 export class MockListProduct extends ListProduct {
   constructor(

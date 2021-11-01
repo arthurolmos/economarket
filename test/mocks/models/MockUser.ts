@@ -1,4 +1,4 @@
-import { User } from '../../src/users/user.entity';
+import { User } from '../../../src/users/user.entity';
 import * as faker from 'faker';
 
 export class MockUser extends User {
@@ -14,9 +14,14 @@ export class MockUser extends User {
     this.firstName = firstName;
     this.lastName = lastName;
     this.email = email;
+
+    this.originalPassword = password;
     this.password = password;
+    this.encryptPassword();
 
     this.createdAt = new Date();
     this.updatedAt = new Date();
   }
+
+  originalPassword;
 }

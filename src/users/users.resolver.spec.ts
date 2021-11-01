@@ -1,40 +1,24 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { UsersResolver } from './users.resolver';
-import { UsersService } from './users.service';
 import { UserCreateInput } from './inputs/user-create.input';
 import { UserUpdateInput } from './inputs/user-update.input';
-import { ShoppingListsService } from '../shopping-lists/shopping-lists.service';
-import { ShoppingList } from '../shopping-lists/shopping-list.entity';
-import { MockRepository, MockUser, MockConnection } from '../../test/mocks';
+import { UsersService } from './users.service';
+import { MockUser, MockUsersService } from '../../test/mocks';
 import * as faker from 'faker';
-import { Connection } from 'typeorm';
 
 describe('UsersResolver', () => {
   let resolver: UsersResolver;
 
-  const mockRepository = new MockRepository();
-  const mockShoppingListsRepository = new MockRepository();
-  const mockConnection = new MockConnection<ShoppingList>();
+  const service = new MockUsersService();
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersResolver,
-        UsersService,
         {
-          provide: getRepositoryToken(User),
-          useValue: mockRepository,
-        },
-        ShoppingListsService,
-        {
-          provide: getRepositoryToken(ShoppingList),
-          useValue: mockShoppingListsRepository,
-        },
-        {
-          provide: Connection,
-          useValue: mockConnection,
+          provide: UsersService,
+          useValue: service,
         },
       ],
     }).compile();
@@ -58,12 +42,12 @@ describe('UsersResolver', () => {
     });
 
     it('should return all Users', async () => {
-      mockRepository.find.mockReturnValue(mockUsers);
-
+      service.findAll.mockReturnValue(mockUsers);
       const users = await resolver.getUsers();
 
       expect(users).toBeDefined();
       expect(users).toHaveLength(5);
+      expect(service.findAll).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -76,13 +60,13 @@ describe('UsersResolver', () => {
 
     it('should return an User by passing its ID', async () => {
       const id = mockUser.id;
-      mockRepository.findOne.mockReturnValue(mockUser);
+      service.findOne.mockReturnValue(mockUser);
 
       const user = await resolver.getUser(id);
 
       expect(user).toBeDefined();
       expect(user).toEqual(mockUser);
-      expect(mockRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(service.findOne).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -102,13 +86,13 @@ describe('UsersResolver', () => {
         mockData.email,
         mockData.password,
       );
-      mockRepository.save.mockReturnValue(mockUser);
+      service.create.mockReturnValue(mockUser);
 
       const user = await resolver.createUser(mockData);
 
       expect(user).toBeDefined();
       expect(user).toEqual(mockUser);
-      expect(mockRepository.save).toHaveBeenCalledTimes(1);
+      expect(service.create).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -126,7 +110,7 @@ describe('UsersResolver', () => {
       };
       mockUser.firstName = mockValues.firstName;
       mockUser.lastName = mockValues.lastName;
-      mockRepository.findOne.mockReturnValue(mockUser);
+      service.update.mockReturnValue(mockUser);
       const id = mockUser.id;
 
       const user = await resolver.updateUser(id, mockValues);
@@ -134,7 +118,7 @@ describe('UsersResolver', () => {
       expect(user).toBeDefined();
       expect(user.firstName).toEqual(mockValues.firstName);
       expect(user.lastName).toEqual(mockValues.lastName);
-      expect(mockRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(service.update).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -147,10 +131,10 @@ describe('UsersResolver', () => {
 
     it('should soft delete an User', async () => {
       const id = mockUser.id;
-      mockRepository.softDelete.mockReturnValue(Promise.resolve());
+      service.delete.mockReturnValue(Promise.resolve());
 
       expect(await resolver.deleteUser(id)).resolves;
-      expect(mockRepository.softDelete).toHaveBeenCalledTimes(1);
+      expect(service.delete).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -163,13 +147,13 @@ describe('UsersResolver', () => {
 
     it('should restore a soft deleted User', async () => {
       const id = mockUser.id;
-      mockRepository.softDelete.mockReturnValue(Promise.resolve());
-      mockRepository.restore.mockReturnValue(Promise.resolve());
+      service.delete.mockReturnValue(Promise.resolve());
+      service.restore.mockReturnValue(Promise.resolve());
 
       expect(await resolver.deleteUser(id)).resolves;
       expect(await resolver.restoreUser(id)).resolves;
-      expect(mockRepository.softDelete).toHaveBeenCalledTimes(1);
-      expect(mockRepository.restore).toHaveBeenCalledTimes(1);
+      expect(service.delete).toHaveBeenCalledTimes(1);
+      expect(service.restore).toHaveBeenCalledTimes(1);
     });
   });
 });

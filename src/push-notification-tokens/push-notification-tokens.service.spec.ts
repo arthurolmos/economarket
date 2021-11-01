@@ -5,15 +5,18 @@ import {
   MockRepository,
   MockPushNotificationToken,
   MockUser,
+  MockUsersService,
 } from '../../test/mocks';
 import { PushNotificationTokensCreateInput } from './input/push-notification-tokens-create.input';
 import { PushNotificationToken } from './push-notification-token.entity';
 import { PushNotificationTokensService } from './push-notification-tokens.service';
+import { UsersService } from '../users/users.service';
 
 describe('PushNotificationTokensService', () => {
   let service: PushNotificationTokensService;
 
   const mockPushNotificationTokensRepository = new MockRepository();
+  const usersService = new MockUsersService();
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -22,6 +25,10 @@ describe('PushNotificationTokensService', () => {
         {
           provide: getRepositoryToken(PushNotificationToken),
           useValue: mockPushNotificationTokensRepository,
+        },
+        {
+          provide: UsersService,
+          useValue: usersService,
         },
       ],
     }).compile();
@@ -201,33 +208,6 @@ describe('PushNotificationTokensService', () => {
     });
   });
 
-  describe('checkToken', () => {
-    let mockUser: User;
-    let pushNotificationToken: PushNotificationToken;
-
-    beforeEach(() => {
-      mockUser = new MockUser();
-
-      pushNotificationToken = new MockPushNotificationToken(mockUser);
-    });
-
-    it('should return one PushNotificationToken by passing the token and the User Id (almost same as findOneByUser)', async () => {
-      const notificationToken = pushNotificationToken.token;
-      const userId = mockUser.id;
-      mockPushNotificationTokensRepository.findOne.mockReturnValue(
-        pushNotificationToken,
-      );
-
-      const token = await service.checkToken(userId, notificationToken);
-
-      expect(token).toBeDefined();
-      expect(token).toEqual(pushNotificationToken);
-      expect(
-        mockPushNotificationTokensRepository.findOne,
-      ).toHaveBeenCalledTimes(1);
-    });
-  });
-
   describe('create', () => {
     let mockUser: User;
     let pushNotificationToken: PushNotificationToken;
@@ -243,15 +223,17 @@ describe('PushNotificationTokensService', () => {
     });
 
     it('should create one PushNotificationToken', async () => {
+      const userId = mockUser.id;
       pushNotificationToken = new MockPushNotificationToken(
         mockUser,
         mockData.token,
       );
+      usersService.findOne.mockReturnValue(mockUser);
       mockPushNotificationTokensRepository.save.mockReturnValue(
         pushNotificationToken,
       );
 
-      const token = await service.create(mockData.token, mockUser);
+      const token = await service.create(mockData.token, userId);
 
       expect(token).toBeDefined();
       expect(token).toEqual(pushNotificationToken);

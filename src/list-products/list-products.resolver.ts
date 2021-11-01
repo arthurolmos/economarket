@@ -1,12 +1,4 @@
-import {
-  Parent,
-  ResolveField,
-  Resolver,
-  Query,
-  Args,
-  Mutation,
-} from '@nestjs/graphql';
-import { ShoppingListsService } from '../shopping-lists/shopping-lists.service';
+import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
 import { ListProductsCreateInput } from './inputs/list-products-create.input';
 import { ListProductsUpdateInput } from './inputs/list-products-update.input';
 import { ListProduct } from './list-product.entity';
@@ -14,16 +6,7 @@ import { ListProductsService } from './list-products.service';
 
 @Resolver(() => ListProduct)
 export class ListProductsResolver {
-  constructor(
-    private listProductsService: ListProductsService,
-    private shoppingListsService: ShoppingListsService,
-  ) {}
-
-  @ResolveField()
-  shoppingList(@Parent() listProduct: ListProduct) {
-    const id = listProduct.shoppingList.id;
-    return this.shoppingListsService.findOne(id);
-  }
+  constructor(private listProductsService: ListProductsService) {}
 
   @Query(() => [ListProduct], { name: 'listProducts' })
   getListProducts() {
@@ -72,14 +55,9 @@ export class ListProductsResolver {
     @Args('shoppingListId') shoppingListId: string,
   ) {
     try {
-      const shoppingList = await this.shoppingListsService.findOne(
-        shoppingListId,
-      );
-      if (!shoppingList) throw new Error('Shopping List not found!');
-
       const listProduct = await this.listProductsService.create(
         data,
-        shoppingList,
+        shoppingListId,
       );
 
       return listProduct;

@@ -1,10 +1,11 @@
-import { Product } from '../../src/products/product.entity';
+import { Product } from '../../../src/products/product.entity';
 import { MockUser } from './MockUser';
 import * as faker from 'faker';
+import { User } from '../../../src/users/user.entity';
 
 export class MockProduct extends Product {
   constructor(
-    user = new MockUser(),
+    user: User | MockUser = new MockUser(),
     name = faker.commerce.productName(),
     price = parseFloat(faker.commerce.price()),
     brand = faker.company.companyName(),

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { UserCreateInput } from './inputs/user-create.input';
@@ -47,7 +47,7 @@ export class UsersService {
 
   async update(id: string, values: UserUpdateInput): Promise<User> {
     const user = await this.findOne(id);
-    if (!user) throw new Error();
+    if (!user) throw new NotFoundException();
 
     Object.assign(user, values);
 

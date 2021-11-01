@@ -1,10 +1,11 @@
 import * as faker from 'faker';
-import { Notification } from '../../src/notifications/notification.entity';
+import { User } from '../../../src/users/user.entity';
+import { Notification } from '../../../src/notifications/notification.entity';
 import { MockUser } from './MockUser';
 
 export class MockNotification extends Notification {
   constructor(
-    user = new MockUser(),
+    user: User | MockUser = new MockUser(),
     title = faker.lorem.words(),
     body = faker.lorem.text(),
     read = false,

@@ -45,18 +45,8 @@ export class PushNotificationTokensResolver {
     @Args('userId') userId: string,
   ) {
     try {
-      const user = await this.usersService.findOne(userId);
-      if (!user) throw new Error('User not found!');
-
-      let pushNotificationToken =
-        await this.pushNotificationTokensService.checkToken(userId, token);
-
-      if (!pushNotificationToken) {
-        pushNotificationToken = await this.pushNotificationTokensService.create(
-          token,
-          user,
-        );
-      }
+      const pushNotificationToken =
+        await this.pushNotificationTokensService.create(token, userId);
 
       return pushNotificationToken;
     } catch (err) {

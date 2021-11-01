@@ -36,8 +36,7 @@ export class NotificationsService {
   ): Promise<Notification> {
     const notification = new Notification();
 
-    Object.assign(notification, data);
-    notification.user = user;
+    Object.assign(notification, data, { user });
 
     return await this.notificationsRepository.save(notification);
   }

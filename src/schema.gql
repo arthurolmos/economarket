@@ -2,6 +2,38 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type ListProduct {
+  id: ID!
+  productId: ID
+  name: String!
+  quantity: Float!
+  price: Float!
+  brand: String
+  market: String
+  purchased: Boolean!
+  shoppingList: ShoppingList!
+  user: User!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type ShoppingList {
+  id: ID!
+  name: String!
+  date: DateTime!
+  done: Boolean!
+  user: User!
+  sharedUsers: [User!]!
+  listProducts: [ListProduct!]
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
 type Product {
   id: ID!
   name: String!
@@ -12,11 +44,6 @@ type Product {
   createdAt: DateTime!
   updatedAt: DateTime!
 }
-
-"""
-A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
-"""
-scalar DateTime
 
 type Notification {
   id: ID!
@@ -53,33 +80,6 @@ type User {
   deletedAt: DateTime!
 }
 
-type ListProduct {
-  id: ID!
-  productId: ID
-  name: String!
-  quantity: Float!
-  price: Float!
-  brand: String
-  market: String
-  purchased: Boolean!
-  shoppingList: ShoppingList!
-  user: User!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-}
-
-type ShoppingList {
-  id: ID!
-  name: String!
-  date: DateTime!
-  done: Boolean!
-  user: User!
-  sharedUsers: [User!]!
-  listProducts: [ListProduct!]
-  createdAt: DateTime!
-  updatedAt: DateTime!
-}
-
 type AuthResult {
   user: User!
   token: String!
@@ -112,58 +112,29 @@ type Mutation {
   updateUser(values: UserUpdateInput!, id: String!): User!
   deleteUser(id: String!): String!
   restoreUser(id: String!): String!
-  createShoppingList(
-    userId: String!
-    data: ShoppingListsCreateInput!
-  ): ShoppingList!
-  updateShoppingList(
-    userId: String!
-    values: ShoppingListsUpdateInput!
-    id: String!
-  ): ShoppingList!
-  finishShoppingList(userId: String!, id: String!): ShoppingList!
-  restoreShoppingList(userId: String!, id: String!): ShoppingList!
-  shareShoppingList(sharedUserId: String!, id: String!): ShoppingList!
+  createShoppingList(userId: String!, data: ShoppingListsCreateInput!): ShoppingList!
+  updateShoppingList(values: ShoppingListsUpdateInput!, id: String!): ShoppingList!
+  finishShoppingList(id: String!): ShoppingList!
+  restoreShoppingList(id: String!): ShoppingList!
+  shareShoppingList(userId: String!, id: String!): ShoppingList!
   unshareShoppingList(userId: String!, id: String!): ShoppingList!
   leaveSharedShoppingList(userId: String!, id: String!): ShoppingList!
-  deleteShoppingList(userId: String!, id: String!): String!
-  createShoppingListFromPendingProducts(
-    data: ShoppingListsCreateInput!
-    remove: Boolean!
-    userId: String!
-    ids: [String!]!
-  ): ShoppingList!
-  createShoppingListFromShoppingLists(
-    data: ShoppingListsCreateInput!
-    userId: String!
-    ids: [String!]!
-  ): ShoppingList!
-  createListProduct(
-    shoppingListId: String!
-    data: ListProductsCreateInput!
-  ): ListProduct!
-  updateListProduct(
-    shoppingListId: String!
-    values: ListProductsUpdateInput!
-    id: String!
-  ): ListProduct!
+  deleteShoppingList(id: String!): String!
+  createShoppingListFromPendingProducts(data: ShoppingListsCreateInput!, remove: Boolean!, userId: String!, ids: [String!]!): ShoppingList!
+  createShoppingListFromShoppingLists(data: ShoppingListsCreateInput!, userId: String!, ids: [String!]!): ShoppingList!
+  createListProduct(shoppingListId: String!, data: ListProductsCreateInput!): ListProduct!
+  updateListProduct(shoppingListId: String!, values: ListProductsUpdateInput!, id: String!): ListProduct!
   deleteListProduct(shoppingListId: String!, id: String!): String!
   createProduct(userId: String!, data: ProductsCreateInput!): Product!
   updateProduct(values: ProductsUpdateInput!, id: String!): Product!
   deleteProduct(id: String!): String!
   login(password: String!, username: String!): AuthResult!
   register(data: UserCreateInput!): AuthResult!
-  createNotification(
-    email: String!
-    data: NotificationsCreateInput!
-  ): Notification!
+  createNotification(email: String!, data: NotificationsCreateInput!): Notification!
   readNotification(id: String!): Notification!
   deleteNotification(id: String!): String!
   deleteAllNotifications: String!
-  createPushNotificationToken(
-    userId: String!
-    token: String!
-  ): PushNotificationToken!
+  createPushNotificationToken(userId: String!, token: String!): PushNotificationToken!
   deletePushNotificationToken(token: String!): String!
   deleteAllPushNotificationTokens: String!
 }

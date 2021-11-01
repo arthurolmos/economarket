@@ -10,35 +10,27 @@ import {
   MockListProduct,
   MockRepository,
   MockShoppingList,
-  MockConnection,
+  MockShoppingListsService,
 } from '../../test/mocks';
 import * as faker from 'faker';
-import { Connection } from 'typeorm';
 
 describe('ListProductsService', () => {
   let service: ListProductsService;
 
-  const mockListProductsRepository = new MockRepository();
-  const mockShoppingListsRepository = new MockRepository();
-  const mockConnection = new MockConnection();
+  const mockRepository = new MockRepository();
+  const mockShoppingListsService = new MockShoppingListsService();
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ListProductsService,
-        ListProductsService,
         {
           provide: getRepositoryToken(ListProduct),
-          useValue: mockListProductsRepository,
-        },
-        ShoppingListsService,
-        {
-          provide: getRepositoryToken(ShoppingList),
-          useValue: mockShoppingListsRepository,
+          useValue: mockRepository,
         },
         {
-          provide: Connection,
-          useValue: mockConnection,
+          provide: ShoppingListsService,
+          useValue: mockShoppingListsService,
         },
       ],
     }).compile();
@@ -61,13 +53,13 @@ describe('ListProductsService', () => {
     });
 
     it('should return all List Produts', async () => {
-      mockListProductsRepository.find.mockReturnValue(mockListProducts);
+      mockRepository.find.mockReturnValue(mockListProducts);
 
       const listProducts = await service.findAll();
 
       expect(listProducts).toBeDefined();
       expect(listProducts).toHaveLength(5);
-      expect(mockListProductsRepository.find).toHaveBeenCalledTimes(1);
+      expect(mockRepository.find).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -86,13 +78,13 @@ describe('ListProductsService', () => {
     it('should receive 2 Ids and return their List Produts', async () => {
       const products = [mockListProducts[0], mockListProducts[1]];
       const ids = products.map((item) => item.id);
-      mockListProductsRepository.find.mockReturnValue(products);
+      mockRepository.find.mockReturnValue(products);
 
       const listProducts = await service.findAllByIds(ids);
 
       expect(listProducts).toBeDefined();
       expect(listProducts).toHaveLength(2);
-      expect(mockListProductsRepository.find).toHaveBeenCalledTimes(1);
+      expect(mockRepository.find).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -113,13 +105,13 @@ describe('ListProductsService', () => {
     it('should return all List Produts from a Shopping List', async () => {
       const shoppingListId = mockShoppingList.id;
       const products = mockListProducts;
-      mockListProductsRepository.find.mockReturnValue(products);
+      mockRepository.find.mockReturnValue(products);
 
       const listProducts = await service.findAllByShoppingList(shoppingListId);
 
       expect(listProducts).toBeDefined();
       expect(listProducts).toHaveLength(5);
-      expect(mockListProductsRepository.find).toHaveBeenCalledTimes(1);
+      expect(mockRepository.find).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -222,7 +214,7 @@ describe('ListProductsService', () => {
     it('should return all List Produts not purchased from a Shopping List', async () => {
       const shoppingListsId = mockShoppingLists.map((item) => item.id);
       const pendingListProducts = listProducts.filter((item) => item.purchased);
-      mockListProductsRepository.find.mockReturnValue(pendingListProducts);
+      mockRepository.find.mockReturnValue(pendingListProducts);
 
       const products = await service.findAllPendingByShoppingLists(
         shoppingListsId,
@@ -230,7 +222,7 @@ describe('ListProductsService', () => {
 
       expect(products).toBeDefined();
       expect(products).toHaveLength(6);
-      expect(mockListProductsRepository.find).toHaveBeenCalledTimes(1);
+      expect(mockRepository.find).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -248,13 +240,13 @@ describe('ListProductsService', () => {
 
     it('should return one List Produts by passing its ID', async () => {
       const id = mockListProducts[0].id;
-      mockListProductsRepository.findOne.mockReturnValue(mockListProducts[0]);
+      mockRepository.findOne.mockReturnValue(mockListProducts[0]);
 
       const listProduct = await service.findOne(id);
 
       expect(listProduct).toBeDefined();
       expect(listProduct).toEqual(mockListProducts[0]);
-      expect(mockListProductsRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(mockRepository.findOne).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -276,7 +268,7 @@ describe('ListProductsService', () => {
       const shoppingListId = mockShoppingList.id;
       const id = mockListProducts[0].id;
       const product = mockListProducts[0];
-      mockListProductsRepository.findOne.mockReturnValue(product);
+      mockRepository.findOne.mockReturnValue(product);
 
       const listProduct = await service.findOneByShoppingList(
         id,
@@ -285,7 +277,7 @@ describe('ListProductsService', () => {
 
       expect(listProduct).toBeDefined();
       expect(listProduct).toEqual(product);
-      expect(mockListProductsRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(mockRepository.findOne).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -308,6 +300,7 @@ describe('ListProductsService', () => {
     });
 
     it('should create a new List Product and return it', async () => {
+      const shoppingListId = mockShoppingList.id;
       mockListProduct = new MockListProduct(
         mockShoppingList,
         mockData.name,
@@ -317,13 +310,14 @@ describe('ListProductsService', () => {
         mockData.purchased,
         mockData.quantity,
       );
-      mockListProductsRepository.save.mockReturnValue(mockListProduct);
+      mockShoppingListsService.findOne.mockReturnValue(mockShoppingList);
+      mockRepository.save.mockReturnValue(mockListProduct);
 
-      const listProduct = await service.create(mockData, mockShoppingList);
+      const listProduct = await service.create(mockData, shoppingListId);
 
       expect(listProduct).toBeDefined();
       expect(listProduct).toEqual(mockListProduct);
-      expect(mockListProductsRepository.save).toHaveBeenCalledTimes(1);
+      expect(mockRepository.save).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -347,8 +341,8 @@ describe('ListProductsService', () => {
       mockListProduct.price = mockValues.price;
       mockListProduct.purchased = mockValues.purchased;
       mockListProduct.quantity = mockValues.quantity;
-      mockListProductsRepository.findOne.mockReturnValue(mockListProduct);
-      mockListProductsRepository.save.mockReturnValue(mockListProduct);
+      mockRepository.findOne.mockReturnValue(mockListProduct);
+      mockRepository.save.mockReturnValue(mockListProduct);
 
       const listProduct = await service.update(
         mockListProduct.id,
@@ -358,8 +352,8 @@ describe('ListProductsService', () => {
 
       expect(listProduct).toBeDefined();
       expect(listProduct).toEqual(mockListProduct);
-      expect(mockListProductsRepository.save).toHaveBeenCalledTimes(1);
-      expect(mockListProductsRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(mockRepository.save).toHaveBeenCalledTimes(1);
+      expect(mockRepository.findOne).toHaveBeenCalledTimes(1);
     });
 
     it('should throw an Error if the List Product is not found', async () => {
@@ -369,12 +363,12 @@ describe('ListProductsService', () => {
         purchased: true,
         quantity: 123,
       };
-      mockListProductsRepository.findOne.mockReturnValue(null);
+      mockRepository.findOne.mockReturnValue(null);
 
       await expect(
         service.update(mockListProduct.id, mockValues, mockShoppingList.id),
       ).rejects.toThrow();
-      expect(mockListProductsRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(mockRepository.findOne).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -390,26 +384,26 @@ describe('ListProductsService', () => {
     it('should delete a List Product', async () => {
       const id = mockListProduct.id;
       const shoppingListId = mockShoppingList.id;
-      mockListProductsRepository.findOne.mockReturnValue(mockListProduct);
-      mockListProductsRepository.delete.mockReturnValue(Promise.resolve());
+      mockRepository.findOne.mockReturnValue(mockListProduct);
+      mockRepository.delete.mockReturnValue(Promise.resolve());
 
       expect(await service.delete(id, shoppingListId)).resolves;
-      expect(mockListProductsRepository.findOne).toHaveBeenCalledTimes(1);
-      expect(mockListProductsRepository.delete).toHaveBeenCalledTimes(1);
+      expect(mockRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(mockRepository.delete).toHaveBeenCalledTimes(1);
     });
 
     it('should not delete a List Product if user not found', async () => {
       const id = mockListProduct.id;
       const shoppingListId = mockShoppingList.id;
-      mockListProductsRepository.findOne.mockReturnValue(null);
+      mockRepository.findOne.mockReturnValue(null);
 
       try {
         service.delete(id, shoppingListId);
       } catch (err) {
         expect(err).toMatch('error');
       }
-      expect(mockListProductsRepository.findOne).toHaveBeenCalledTimes(1);
-      expect(mockListProductsRepository.delete).toHaveBeenCalledTimes(0);
+      expect(mockRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(mockRepository.delete).toHaveBeenCalledTimes(0);
     });
   });
 
@@ -430,12 +424,12 @@ describe('ListProductsService', () => {
     it('should receive a list of Ids and remove their List Products', async () => {
       const products = [mockListProducts[0], mockListProducts[1]];
       const ids = products.map((item) => item.id);
-      mockListProductsRepository.find.mockReturnValue(products);
-      mockListProductsRepository.delete.mockReturnValue(Promise.resolve());
+      mockRepository.find.mockReturnValue(products);
+      mockRepository.delete.mockReturnValue(Promise.resolve());
 
       expect(await service.removeMany(ids)).resolves;
-      expect(mockListProductsRepository.find).toHaveBeenCalledTimes(1);
-      expect(mockListProductsRepository.remove).toHaveBeenCalledTimes(1);
+      expect(mockRepository.find).toHaveBeenCalledTimes(1);
+      expect(mockRepository.remove).toHaveBeenCalledTimes(1);
     });
   });
 });

@@ -14,6 +14,8 @@ import {
   MockUser,
   MockListProduct,
   MockConnection,
+  MockUsersService,
+  MockListProductsService,
 } from '../../test/mocks';
 import * as faker from 'faker';
 import { Connection } from 'typeorm';
@@ -21,9 +23,8 @@ import { Connection } from 'typeorm';
 describe('ShoppingListsService', () => {
   let shoppingListsService: ShoppingListsService;
 
-  const mockShoppingListsRepository = new MockRepository();
-  const mockUsersRepository = new MockRepository();
-  const mockListProductsRepository = new MockRepository();
+  const shoppingListsRepository = new MockRepository();
+  const usersService = new MockUsersService();
   const mockConnection = new MockConnection<ShoppingList>();
 
   beforeEach(async () => {
@@ -32,17 +33,11 @@ describe('ShoppingListsService', () => {
         ShoppingListsService,
         {
           provide: getRepositoryToken(ShoppingList),
-          useValue: mockShoppingListsRepository,
+          useValue: shoppingListsRepository,
         },
-        UsersService,
         {
-          provide: getRepositoryToken(User),
-          useValue: mockUsersRepository,
-        },
-        ListProductsService,
-        {
-          provide: getRepositoryToken(ListProduct),
-          useValue: mockListProductsRepository,
+          provide: UsersService,
+          useValue: usersService,
         },
         {
           provide: Connection,
@@ -70,13 +65,13 @@ describe('ShoppingListsService', () => {
     });
 
     it('should return all Shopping Lists', async () => {
-      mockShoppingListsRepository.find.mockReturnValue(mockShoppingLists);
+      shoppingListsRepository.find.mockReturnValue(mockShoppingLists);
 
       const shoppingLists = await shoppingListsService.findAll();
 
       expect(shoppingLists).toBeDefined();
       expect(shoppingLists).toHaveLength(5);
-      expect(mockShoppingListsRepository.find).toHaveBeenCalledTimes(1);
+      expect(shoppingListsRepository.find).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -96,7 +91,7 @@ describe('ShoppingListsService', () => {
 
     it('should return all Shopping Lists by User', async () => {
       const userId = mockUser.id;
-      mockShoppingListsRepository.createQueryBuilder.mockImplementation(() => ({
+      shoppingListsRepository.createQueryBuilder.mockImplementation(() => ({
         leftJoinAndSelect: jest.fn().mockReturnThis(),
         where: jest.fn().mockReturnThis(),
         andWhere: jest.fn().mockReturnThis(),
@@ -109,9 +104,9 @@ describe('ShoppingListsService', () => {
 
       expect(shoppingLists).toBeDefined();
       expect(shoppingLists).toHaveLength(5);
-      expect(
-        mockShoppingListsRepository.createQueryBuilder,
-      ).toHaveBeenCalledTimes(1);
+      expect(shoppingListsRepository.createQueryBuilder).toHaveBeenCalledTimes(
+        1,
+      );
     });
   });
 
@@ -129,13 +124,13 @@ describe('ShoppingListsService', () => {
 
     it('should return a Shopping Lists by passing its ID', async () => {
       const shoppingListId = mockShoppingLists[0].id;
-      mockShoppingListsRepository.findOne.mockReturnValue(mockShoppingLists[0]);
+      shoppingListsRepository.findOne.mockReturnValue(mockShoppingLists[0]);
 
       const shoppingList = await shoppingListsService.findOne(shoppingListId);
 
       expect(shoppingList).toBeDefined();
       expect(shoppingList).toBe(mockShoppingLists[0]);
-      expect(mockShoppingListsRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(shoppingListsRepository.findOne).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -156,7 +151,7 @@ describe('ShoppingListsService', () => {
     it('should return one Shopping Lists from User by passing Users ID and Shopping List ID', async () => {
       const id = mockShoppingLists[0].id;
       const userId = mockUser.id;
-      mockShoppingListsRepository.createQueryBuilder.mockImplementation(() => ({
+      shoppingListsRepository.createQueryBuilder.mockImplementation(() => ({
         leftJoinAndSelect: jest.fn().mockReturnThis(),
         where: jest.fn().mockReturnThis(),
         andWhere: jest.fn().mockReturnThis(),
@@ -169,9 +164,9 @@ describe('ShoppingListsService', () => {
 
       expect(shoppingList).toBeDefined();
       expect(shoppingList).toBe(mockShoppingLists[0]);
-      expect(
-        mockShoppingListsRepository.createQueryBuilder,
-      ).toHaveBeenCalledTimes(1);
+      expect(shoppingListsRepository.createQueryBuilder).toHaveBeenCalledTimes(
+        1,
+      );
     });
   });
 
@@ -184,31 +179,29 @@ describe('ShoppingListsService', () => {
     });
 
     it('should create a new Shopping List and returns it', async () => {
+      const userId = mockUser.id;
       const mockData: ShoppingListsCreateInput = {
         name: faker.name.firstName(),
         date: new Date(),
       };
       mockShoppingList = new MockShoppingList(mockUser, mockData.name);
-      mockShoppingListsRepository.save.mockReturnValue(mockShoppingList);
+      usersService.findOne.mockReturnValue(mockUser);
+      shoppingListsRepository.save.mockReturnValue(mockShoppingList);
 
-      const shoppingList = await shoppingListsService.create(
-        mockData,
-        mockUser,
-      );
+      const shoppingList = await shoppingListsService.create(mockData, userId);
 
       expect(shoppingList).toBeDefined();
       expect(shoppingList).toEqual(mockShoppingList);
-      expect(mockShoppingListsRepository.save).toHaveBeenCalledTimes(1);
+      expect(usersService.findOne).toHaveBeenCalledTimes(1);
+      expect(shoppingListsRepository.save).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('updateShoppingList', () => {
-    let mockUser: User;
     let mockShoppingList: ShoppingList;
 
     beforeEach(() => {
-      mockUser = new MockUser();
-      mockShoppingList = new MockShoppingList(mockUser);
+      mockShoppingList = new MockShoppingList();
     });
 
     it('should create a new Shopping List, update and returns it', async () => {
@@ -220,19 +213,18 @@ describe('ShoppingListsService', () => {
       mockShoppingList.name = mockValues.name;
       mockShoppingList.date = mockValues.date;
       mockShoppingList.done = mockValues.done;
-      mockShoppingListsRepository.findOne.mockReturnValue(mockShoppingList);
-      mockShoppingListsRepository.save.mockReturnValue(mockShoppingList);
+      shoppingListsRepository.findOne.mockReturnValue(mockShoppingList);
+      shoppingListsRepository.save.mockReturnValue(mockShoppingList);
 
       const shoppingList = await shoppingListsService.update(
         mockShoppingList.id,
         mockValues,
-        mockUser.id,
       );
 
       expect(shoppingList).toBeDefined();
       expect(shoppingList).toEqual(mockShoppingList);
-      expect(mockShoppingListsRepository.save).toHaveBeenCalledTimes(1);
-      expect(mockShoppingListsRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(shoppingListsRepository.save).toHaveBeenCalledTimes(1);
+      expect(shoppingListsRepository.findOne).toHaveBeenCalledTimes(1);
     });
 
     it('should create a new Shopping List, try to update and throw an error for not finding', async () => {
@@ -244,12 +236,12 @@ describe('ShoppingListsService', () => {
       mockShoppingList.name = mockValues.name;
       mockShoppingList.date = mockValues.date;
       mockShoppingList.done = mockValues.done;
-      mockShoppingListsRepository.findOne.mockReturnValue(null);
+      shoppingListsRepository.findOne.mockReturnValue(null);
 
       await expect(
-        shoppingListsService.update('invalidId', mockValues, mockUser.id),
+        shoppingListsService.update('invalidId', mockValues),
       ).rejects.toThrow();
-      expect(mockShoppingListsRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(shoppingListsRepository.findOne).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -270,31 +262,35 @@ describe('ShoppingListsService', () => {
 
     it('should create a new Shopping List, share it with an user and return it', async () => {
       const user = mockUsers[2];
+      const userId = user.id;
       mockShoppingList.sharedUsers = [user];
-      mockShoppingListsRepository.findOne.mockReturnValue(mockShoppingList);
-      mockShoppingListsRepository.save.mockReturnValue(mockShoppingList);
+      usersService.findOne.mockReturnValue(user);
+      shoppingListsRepository.findOne.mockReturnValue(mockShoppingList);
+      shoppingListsRepository.save.mockReturnValue(mockShoppingList);
 
       const shoppingList =
         await shoppingListsService.addSharedUsersToShoppingList(
           mockShoppingList.id,
-          user,
+          userId,
         );
 
       expect(shoppingList).toBeDefined();
       expect(shoppingList.sharedUsers.length).toEqual(1);
-      expect(mockShoppingListsRepository.save).toHaveBeenCalledTimes(1);
-      expect(mockShoppingListsRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(shoppingListsRepository.save).toHaveBeenCalledTimes(1);
+      expect(shoppingListsRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(usersService.findOne).toHaveBeenCalledTimes(1);
     });
 
     it('should create a new Shopping List, try to share and throw an error for not finding it', async () => {
       const user = mockUsers[2];
+      const userId = user.id;
       mockShoppingList.sharedUsers = [user];
-      mockShoppingListsRepository.findOne.mockReturnValue(null);
+      shoppingListsRepository.findOne.mockReturnValue(null);
 
       await expect(
-        shoppingListsService.addSharedUsersToShoppingList('invalidId', user),
+        shoppingListsService.addSharedUsersToShoppingList('invalidId', userId),
       ).rejects.toThrow();
-      expect(mockShoppingListsRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(shoppingListsRepository.findOne).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -316,51 +312,52 @@ describe('ShoppingListsService', () => {
     it('should create a new Shopping List, share it with 2 users, remove one of them and return it', async () => {
       mockShoppingList.sharedUsers = [mockUsers[2], mockUsers[3]];
       const user = mockUsers[2];
-      mockShoppingListsRepository.findOne.mockReturnValue(mockShoppingList);
-      mockShoppingListsRepository.save.mockReturnValue(mockShoppingList);
+      const userId = user.id;
+      usersService.findOne.mockReturnValue(user);
+      shoppingListsRepository.findOne.mockReturnValue(mockShoppingList);
+      shoppingListsRepository.save.mockReturnValue(mockShoppingList);
 
       const shoppingList =
         await shoppingListsService.deleteSharedUserFromShoppingList(
           mockShoppingList.id,
-          user,
+          userId,
         );
 
       expect(shoppingList).toBeDefined();
       expect(shoppingList.sharedUsers.length).toEqual(1);
-      expect(mockShoppingListsRepository.save).toHaveBeenCalledTimes(1);
-      expect(mockShoppingListsRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(shoppingListsRepository.save).toHaveBeenCalledTimes(1);
+      expect(shoppingListsRepository.findOne).toHaveBeenCalledTimes(1);
     });
 
     it('should create a new Shopping List, try to share and throw an error if not find it', async () => {
       const user = mockUsers[2];
+      const userId = user.id;
       mockShoppingList.sharedUsers = [mockUsers[3]];
-      mockShoppingListsRepository.findOne.mockReturnValue(null);
+      shoppingListsRepository.findOne.mockReturnValue(null);
 
       await expect(
         shoppingListsService.deleteSharedUserFromShoppingList(
           'invalidId',
-          user,
+          userId,
         ),
       ).rejects.toThrow();
-      expect(mockShoppingListsRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(shoppingListsRepository.findOne).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('deleteShoppingList', () => {
-    let mockUser: User;
     let mockShoppingList: ShoppingList;
 
     beforeEach(() => {
-      mockUser = new MockUser();
-      mockShoppingList = new MockShoppingList(mockUser);
+      mockShoppingList = new MockShoppingList();
     });
 
     it('should delete a Shopping List', async () => {
       const id = mockShoppingList.id;
-      mockShoppingListsRepository.delete.mockReturnValue(Promise.resolve());
+      shoppingListsRepository.delete.mockReturnValue(Promise.resolve());
 
       expect(shoppingListsService.delete(id)).resolves;
-      expect(mockShoppingListsRepository.delete).toHaveBeenCalledTimes(1);
+      expect(shoppingListsRepository.delete).toHaveBeenCalledTimes(1);
     });
   });
 

@@ -1,37 +1,12 @@
-import {
-  Args,
-  Mutation,
-  Parent,
-  Query,
-  ResolveField,
-  Resolver,
-} from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { ShoppingList } from './shopping-list.entity';
 import { ShoppingListsService } from './shopping-lists.service';
 import { ShoppingListsCreateInput } from './inputs/shopping-lists-create.input';
 import { ShoppingListsUpdateInput } from './inputs/shopping-lists-update.input';
-import { ListProductsService } from '../list-products/list-products.service';
-import { UsersService } from '../users/users.service';
 
 @Resolver(() => ShoppingList)
 export class ShoppingListsResolver {
-  constructor(
-    private shoppingListsService: ShoppingListsService,
-    private listProductsService: ListProductsService,
-    private usersService: UsersService,
-  ) {}
-
-  @ResolveField()
-  user(@Parent() shoppingList: ShoppingList) {
-    const id = shoppingList.user.id;
-    return this.usersService.findOne(id);
-  }
-
-  @ResolveField()
-  listProducts(@Parent() shoppingList: ShoppingList) {
-    const id = shoppingList.id;
-    return this.listProductsService.findAllByShoppingList(id);
-  }
+  constructor(private shoppingListsService: ShoppingListsService) {}
 
   @Query(() => [ShoppingList], { name: 'shoppingLists' })
   getShoppingLists() {
@@ -66,8 +41,7 @@ export class ShoppingListsResolver {
     @Args('userId') userId: string,
   ) {
     try {
-      return this.shoppingListsService.findOne(id);
-      // return this.shoppingListsService.findOneByUser(id, userId);
+      return this.shoppingListsService.findOneByUser(id, userId);
     } catch (err) {
       console.log('Error on finding shopping list', err);
     }
@@ -79,10 +53,7 @@ export class ShoppingListsResolver {
     @Args('userId') userId: string,
   ) {
     try {
-      const user = await this.usersService.findOne(userId);
-      if (!user) throw new Error('User not found!');
-
-      const shoppingList = await this.shoppingListsService.create(data, user);
+      const shoppingList = await this.shoppingListsService.create(data, userId);
 
       return shoppingList;
     } catch (err) {
@@ -94,14 +65,9 @@ export class ShoppingListsResolver {
   async updateShoppingList(
     @Args('id') id: string,
     @Args('values') values: ShoppingListsUpdateInput,
-    @Args('userId') userId: string,
   ) {
     try {
-      const shoppingList = await this.shoppingListsService.update(
-        id,
-        values,
-        userId,
-      );
+      const shoppingList = await this.shoppingListsService.update(id, values);
 
       return shoppingList;
     } catch (err) {
@@ -110,16 +76,11 @@ export class ShoppingListsResolver {
   }
 
   @Mutation(() => ShoppingList)
-  async finishShoppingList(
-    @Args('id') id: string,
-    @Args('userId') userId: string,
-  ) {
+  async finishShoppingList(@Args('id') id: string) {
     try {
-      const shoppingList = await this.shoppingListsService.update(
-        id,
-        { done: true },
-        userId,
-      );
+      const shoppingList = await this.shoppingListsService.update(id, {
+        done: true,
+      });
 
       return shoppingList;
     } catch (err) {
@@ -128,16 +89,11 @@ export class ShoppingListsResolver {
   }
 
   @Mutation(() => ShoppingList)
-  async restoreShoppingList(
-    @Args('id') id: string,
-    @Args('userId') userId: string,
-  ) {
+  async restoreShoppingList(@Args('id') id: string) {
     try {
-      const shoppingList = await this.shoppingListsService.update(
-        id,
-        { done: false },
-        userId,
-      );
+      const shoppingList = await this.shoppingListsService.update(id, {
+        done: false,
+      });
 
       return shoppingList;
     } catch (err) {
@@ -148,15 +104,15 @@ export class ShoppingListsResolver {
   @Mutation(() => ShoppingList)
   async shareShoppingList(
     @Args('id') id: string,
-    @Args('sharedUserId')
-    sharedUserId: string,
+    @Args('userId')
+    userId: string,
   ) {
     try {
-      const user = await this.usersService.findOne(sharedUserId);
-      if (!user) throw new Error();
-
       const shoppingList =
-        await this.shoppingListsService.addSharedUsersToShoppingList(id, user);
+        await this.shoppingListsService.addSharedUsersToShoppingList(
+          id,
+          userId,
+        );
 
       return shoppingList;
     } catch (err) {
@@ -170,13 +126,10 @@ export class ShoppingListsResolver {
     @Args('userId') userId: string,
   ) {
     try {
-      const user = await this.usersService.findOne(userId);
-      if (!user) throw new Error();
-
       const shoppingList =
         await this.shoppingListsService.deleteSharedUserFromShoppingList(
           id,
-          user,
+          userId,
         );
 
       return shoppingList;
@@ -191,13 +144,10 @@ export class ShoppingListsResolver {
     @Args('userId') userId: string,
   ) {
     try {
-      const user = await this.usersService.findOne(userId);
-      if (!user) throw new Error();
-
       const shoppingList =
         await this.shoppingListsService.deleteSharedUserFromShoppingList(
           id,
-          user,
+          userId,
         );
 
       return shoppingList;
@@ -207,17 +157,8 @@ export class ShoppingListsResolver {
   }
 
   @Mutation(() => String)
-  async deleteShoppingList(
-    @Args('id') id: string,
-    @Args('userId') userId: string,
-  ) {
+  async deleteShoppingList(@Args('id') id: string) {
     try {
-      const shoppingList = await this.shoppingListsService.findOneByUser(
-        id,
-        userId,
-      );
-      if (!shoppingList) throw new Error();
-
       await this.shoppingListsService.delete(id);
 
       return id;

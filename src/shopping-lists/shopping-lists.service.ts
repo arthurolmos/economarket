@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../users/user.entity';
 import { Brackets, Connection, Repository, In } from 'typeorm';
@@ -7,18 +7,21 @@ import { ShoppingListsUpdateInput } from './inputs/shopping-lists-update.input';
 import { ShoppingList } from './shopping-list.entity';
 import { ListProduct } from '../list-products/list-product.entity';
 import { ListProductsCreateInput } from '../list-products/inputs/list-products-create.input';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class ShoppingListsService {
   constructor(
     @InjectRepository(ShoppingList)
     private shoppingListsRepository: Repository<ShoppingList>,
+    private usersService: UsersService,
     private connection: Connection,
   ) {}
 
   findAll(): Promise<ShoppingList[]> {
     return this.shoppingListsRepository.find({
       relations: ['user', 'listProducts', 'sharedUsers'],
+      order: { date: 'DESC' },
     });
   }
 
@@ -65,14 +68,15 @@ export class ShoppingListsService {
 
   async create(
     data: ShoppingListsCreateInput,
-    user: User,
+    userId: string,
     listProducts?: ListProductsCreateInput[],
   ): Promise<ShoppingList> {
+    const user = await this.usersService.findOne(userId);
+    if (!user) throw new NotFoundException('User not found!');
+
     const shoppingList = new ShoppingList();
 
-    Object.assign(shoppingList, data);
-    shoppingList.listProducts = listProducts as ListProduct[];
-    shoppingList.user = user;
+    Object.assign(shoppingList, data, { listProducts, user });
 
     return await this.shoppingListsRepository.save(shoppingList);
   }
@@ -85,10 +89,11 @@ export class ShoppingListsService {
   ) {
     return await this.connection.transaction(async (manager) => {
       const user = await manager.findOne<User>(User, userId);
-      if (!user) throw new Error('User not found!');
+      if (!user) throw new NotFoundException('User not found!');
 
       const listProductsPending = await manager.find<ListProduct>(ListProduct, {
         where: { shoppingList: In(ids), purchased: false },
+        order: { name: 'ASC' },
       });
 
       const products = listProductsPending.map((item) => {
@@ -105,9 +110,7 @@ export class ShoppingListsService {
       });
 
       const shoppingList = new ShoppingList();
-      Object.assign(shoppingList, data);
-      shoppingList.listProducts = products as ListProduct[];
-      shoppingList.user = user;
+      Object.assign(shoppingList, data, { listProducts: products, user });
 
       await manager.save(shoppingList);
 
@@ -126,11 +129,11 @@ export class ShoppingListsService {
   ) {
     return await this.connection.transaction(async (manager) => {
       const user = await manager.findOne<User>(User, userId);
-      if (!user) throw new Error('User not found!');
+      if (!user) throw new NotFoundException('User not found!');
 
       const listProducts = await manager.find<ListProduct>(ListProduct, {
         where: { shoppingList: In(ids) },
-        order: { name: 'DESC' },
+        order: { name: 'ASC' },
       });
 
       const products: ListProductsCreateInput[] = [];
@@ -156,11 +159,7 @@ export class ShoppingListsService {
       });
 
       const shoppingList = new ShoppingList();
-      Object.assign(shoppingList, data);
-      shoppingList.listProducts = products as ListProduct[];
-      shoppingList.user = user;
-
-      console.log({ shoppingList });
+      Object.assign(shoppingList, data, { listProducts: products, user });
 
       await manager.save(shoppingList);
 
@@ -171,10 +170,9 @@ export class ShoppingListsService {
   async update(
     id: string,
     values: ShoppingListsUpdateInput,
-    userId: string,
   ): Promise<ShoppingList> {
     const shoppingList = await this.findOne(id);
-    if (!shoppingList) throw new Error();
+    if (!shoppingList) throw new NotFoundException('User not found!');
 
     Object.assign(shoppingList, values);
 
@@ -185,12 +183,15 @@ export class ShoppingListsService {
 
   async addSharedUsersToShoppingList(
     id: string,
-    sharedUser: User,
+    userId: string,
   ): Promise<ShoppingList> {
-    const shoppingList = await this.findOne(id);
-    if (!shoppingList) throw new Error();
+    const user = await this.usersService.findOne(userId);
+    if (!user) throw new NotFoundException('User not found!');
 
-    const users = new Set(shoppingList.sharedUsers.concat(sharedUser));
+    const shoppingList = await this.findOne(id);
+    if (!shoppingList) throw new NotFoundException('Shopping List not found!');
+
+    const users = new Set(shoppingList.sharedUsers.concat(user));
 
     shoppingList.sharedUsers = [...users];
 
@@ -201,15 +202,18 @@ export class ShoppingListsService {
 
   async deleteSharedUserFromShoppingList(
     id: string,
-    user: User,
+    userId: string,
   ): Promise<ShoppingList> {
+    const user = await this.usersService.findOne(userId);
+    if (!user) throw new NotFoundException('User not found!');
+
     const shoppingList = await this.findOne(id);
-    if (!shoppingList) throw new Error();
+    if (!shoppingList) throw new NotFoundException('Shopping List not found!');
 
     const index = shoppingList.sharedUsers.findIndex(
       (sharedUser) => sharedUser.id === user.id,
     );
-    if (index < 0) throw new Error('User not found');
+    if (index < 0) throw new NotFoundException('Shared User not found');
 
     shoppingList.sharedUsers.splice(index, 1);
 

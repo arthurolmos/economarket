@@ -1,34 +1,25 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
 import { Product } from './product.entity';
 import { ProductsResolver } from './products.resolver';
 import { ProductsService } from './products.service';
 import { ProductsCreateInput } from './inputs/products-create.input';
 import { ProductsUpdateInput } from './inputs/products-update.input';
-import { UsersService } from '../users/users.service';
 import { User } from '../users/user.entity';
-import { MockRepository, MockUser, MockProduct } from '../../test/mocks';
+import { MockUser, MockProduct, MockProductsService } from '../../test/mocks';
 import * as faker from 'faker';
 
 describe('ProductsResolver', () => {
   let resolver: ProductsResolver;
 
-  const mockProductsRepository = new MockRepository();
-  const mockUsersRepository = new MockRepository();
+  const service = new MockProductsService();
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ProductsResolver,
-        ProductsService,
         {
-          provide: getRepositoryToken(Product),
-          useValue: mockProductsRepository,
-        },
-        UsersService,
-        {
-          provide: getRepositoryToken(User),
-          useValue: mockUsersRepository,
+          provide: ProductsService,
+          useValue: service,
         },
       ],
     }).compile();
@@ -51,7 +42,7 @@ describe('ProductsResolver', () => {
     });
 
     it('should return all Products', async () => {
-      mockProductsRepository.find.mockReturnValue(mockProducts);
+      service.findAll.mockReturnValue(mockProducts);
 
       const products = await resolver.getProducts();
 
@@ -76,12 +67,13 @@ describe('ProductsResolver', () => {
 
     it('should return all Products by User', async () => {
       const userId = mockUser.id;
-      mockProductsRepository.find.mockReturnValue(mockProducts);
+      service.findAllByUser.mockReturnValue(mockProducts);
 
       const products = await resolver.getProductsByUser(userId);
 
       expect(products).toBeDefined();
       expect(products).toHaveLength(5);
+      expect(service.findAllByUser).toBeCalledTimes(1);
     });
   });
 
@@ -94,13 +86,13 @@ describe('ProductsResolver', () => {
 
     it('should return an Product by passing its ID', async () => {
       const id = mockProduct.id;
-      mockProductsRepository.findOne.mockReturnValue(mockProduct);
+      service.findOne.mockReturnValue(mockProduct);
 
       const product = await resolver.getProduct(id);
 
       expect(product).toBeDefined();
       expect(product).toEqual(mockProduct);
-      expect(mockProductsRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(service.findOne).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -127,33 +119,14 @@ describe('ProductsResolver', () => {
         mockData.market,
         mockData.brand,
       );
-      mockProductsRepository.save.mockReturnValue(mockProduct);
-      mockUsersRepository.findOne.mockReturnValue(mockUser);
+      service.create.mockReturnValue(mockProduct);
       const userId = mockUser.id;
 
       const product = await resolver.createProduct(mockData, userId);
 
       expect(product).toBeDefined();
       expect(product).toEqual(mockProduct);
-      expect(mockProductsRepository.save).toHaveBeenCalledTimes(1);
-    });
-
-    it('should throw an error if User not found', async () => {
-      const mockData: ProductsCreateInput = {
-        name: faker.commerce.product(),
-        price: faker.datatype.number(),
-        market: faker.company.companyName(),
-        brand: faker.company.companyName(),
-      };
-
-      const userId = 'invalidId';
-      mockUsersRepository.findOne.mockReturnValue(null);
-
-      try {
-        await resolver.createProduct(mockData, userId);
-      } catch (err) {
-        expect(err).toMatch('User not found!');
-      }
+      expect(service.create).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -177,7 +150,7 @@ describe('ProductsResolver', () => {
       mockProduct.price = mockValues.price;
       mockProduct.market = mockValues.market;
       mockProduct.brand = mockValues.brand;
-      mockProductsRepository.findOne.mockReturnValue(mockProduct);
+      service.update.mockReturnValue(mockProduct);
       const id = mockProduct.id;
 
       const product = await resolver.updateProduct(id, mockValues);
@@ -187,7 +160,7 @@ describe('ProductsResolver', () => {
       expect(product.price).toEqual(mockValues.price);
       expect(product.market).toEqual(mockValues.market);
       expect(product.brand).toEqual(mockValues.brand);
-      expect(mockProductsRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(service.update).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -200,10 +173,10 @@ describe('ProductsResolver', () => {
 
     it('should delete an Product', async () => {
       const id = mockProduct.id;
-      mockProductsRepository.delete.mockReturnValue(Promise.resolve());
+      service.delete.mockReturnValue(Promise.resolve());
 
       expect(await resolver.deleteProduct(id)).resolves;
-      expect(mockProductsRepository.delete).toHaveBeenCalledTimes(1);
+      expect(service.delete).toHaveBeenCalledTimes(1);
     });
   });
 });

@@ -225,16 +225,14 @@ describe('UsersService', () => {
 
     beforeEach(() => {
       mockUser = new MockUser();
+      mockUser.deletedAt = new Date();
     });
 
     it('should restore a soft deleted User', async () => {
       const id = mockUser.id;
-      mockRepository.softDelete.mockReturnValue(Promise.resolve());
       mockRepository.restore.mockReturnValue(Promise.resolve());
 
-      expect(await service.delete(id)).resolves;
       expect(await service.restore(id)).resolves;
-      expect(mockRepository.softDelete).toHaveBeenCalledTimes(1);
       expect(mockRepository.restore).toHaveBeenCalledTimes(1);
     });
   });
