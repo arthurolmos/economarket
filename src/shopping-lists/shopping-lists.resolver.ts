@@ -1,12 +1,29 @@
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import {
+  Args,
+  Mutation,
+  Parent,
+  Query,
+  ResolveField,
+  Resolver,
+} from '@nestjs/graphql';
 import { ShoppingList } from './shopping-list.entity';
 import { ShoppingListsService } from './shopping-lists.service';
 import { ShoppingListsCreateInput } from './inputs/shopping-lists-create.input';
 import { ShoppingListsUpdateInput } from './inputs/shopping-lists-update.input';
+import { ListProductsService } from '../list-products/list-products.service';
 
 @Resolver(() => ShoppingList)
 export class ShoppingListsResolver {
-  constructor(private shoppingListsService: ShoppingListsService) {}
+  constructor(
+    private shoppingListsService: ShoppingListsService,
+    private listProductsService: ListProductsService,
+  ) {}
+
+  @ResolveField()
+  listProducts(@Parent() shoppingList: ShoppingList) {
+    const id = shoppingList.id;
+    return this.listProductsService.findAllByShoppingList(id);
+  }
 
   @Query(() => [ShoppingList], { name: 'shoppingLists' })
   getShoppingLists() {

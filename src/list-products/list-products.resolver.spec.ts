@@ -8,9 +8,11 @@ import { ListProductsUpdateInput } from './inputs/list-products-update.input';
 import {
   MockListProduct,
   MockShoppingList,
+  MockShoppingListsService,
   MockListProductsService,
 } from '../../test/mocks';
 import * as faker from 'faker';
+import { ShoppingListsService } from '../shopping-lists/shopping-lists.service';
 
 describe('ListProductsResolver', () => {
   let resolver: ListProductsResolver;
@@ -24,6 +26,10 @@ describe('ListProductsResolver', () => {
         {
           provide: ListProductsService,
           useValue: service,
+        },
+        {
+          provide: ShoppingListsService,
+          useValue: MockShoppingListsService,
         },
       ],
     }).compile();

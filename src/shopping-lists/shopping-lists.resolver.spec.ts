@@ -11,8 +11,10 @@ import {
   MockUser,
   MockListProduct,
   MockShoppingListsService,
+  MockListProductsService,
 } from '../../test/mocks';
 import * as faker from 'faker';
+import { ListProductsService } from '../list-products/list-products.service';
 
 describe('ShoppingListsResolver', () => {
   let resolver: ShoppingListsResolver;
@@ -26,6 +28,10 @@ describe('ShoppingListsResolver', () => {
         {
           provide: ShoppingListsService,
           useValue: service,
+        },
+        {
+          provide: ListProductsService,
+          useValue: MockListProductsService,
         },
       ],
     }).compile();
