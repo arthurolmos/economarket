@@ -1,5 +1,10 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { User } from '../users/user.entity';
 import { UserCreateInput } from '../users/inputs/user-create.input';
 import { UsersService } from '../users/users.service';
 // import { TokenAllowListService } from './token-lists/token-allow-list.service';
@@ -21,15 +26,19 @@ export class AuthService {
     return user;
   }
 
-  async login(username: string, password: string) {
+  async validateUser(username: string, password: string) {
     const user = await this.getUserByEmail(username);
-    if (!user) throw new Error('User not found!');
+    if (!user) throw new NotFoundException('User not found!');
 
     const match = await user.validatePassword(password);
-    if (!match) {
+    if (match) {
+      return this.login(user);
+    } else {
       throw new UnauthorizedException();
     }
+  }
 
+  async login(user: User) {
     const payload = { username: user.email, sub: user.id };
 
     const token = this.generateJWTToken(payload);
@@ -45,13 +54,9 @@ export class AuthService {
 
     const user = await this.usersService.create(data);
 
-    const payload = { username: user.email, sub: user.id };
-
-    const token = this.generateJWTToken(payload);
-
     // await this.allowListService.add(token, user.id);
 
-    return { user, token };
+    return this.login(user);
   }
 
   generateJWTToken({ username, sub }: { username: string; sub: string }) {

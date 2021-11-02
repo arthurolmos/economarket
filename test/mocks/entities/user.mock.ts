@@ -1,4 +1,5 @@
 import { User } from '../../../src/users/user.entity';
+import * as bcrypt from 'bcrypt';
 import * as faker from 'faker';
 
 export class MockUser extends User {
@@ -16,12 +17,11 @@ export class MockUser extends User {
     this.email = email;
 
     this.originalPassword = password;
-    this.password = password;
-    this.encryptPassword();
+    this.password = bcrypt.hashSync(password, 10);
 
     this.createdAt = new Date();
     this.updatedAt = new Date();
   }
 
-  originalPassword;
+  public originalPassword;
 }

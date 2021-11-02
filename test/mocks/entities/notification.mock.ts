@@ -1,7 +1,7 @@
 import * as faker from 'faker';
 import { User } from '../../../src/users/user.entity';
 import { Notification } from '../../../src/notifications/notification.entity';
-import { MockUser } from './MockUser';
+import { MockUser } from './user.mock';
 
 export class MockNotification extends Notification {
   constructor(

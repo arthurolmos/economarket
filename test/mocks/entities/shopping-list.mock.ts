@@ -1,17 +1,20 @@
+import { MockUser } from './user.mock';
+import { ShoppingList } from '../../../src/shopping-lists/shopping-list.entity';
 import * as faker from 'faker';
 import { User } from '../../../src/users/user.entity';
-import { PushNotificationToken } from '../../../src/push-notification-tokens/push-notification-token.entity';
-import { MockUser } from './MockUser';
 
-export class MockPushNotificationToken extends PushNotificationToken {
+export class MockShoppingList extends ShoppingList {
   constructor(
     user: User | MockUser = new MockUser(),
-    token = 'ExpoPushToken:' + faker.lorem.words(),
+    name = faker.music.genre(),
+    done = false,
   ) {
     super();
 
     this.id = faker.datatype.uuid();
-    this.token = token;
+    this.name = name;
+    this.date = new Date();
+    this.done = done;
 
     this.user = user;
 

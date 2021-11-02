@@ -14,6 +14,7 @@ export class UsersResolver {
       return this.usersService.findAll();
     } catch (err) {
       console.log('Error on finding all users', err);
+      return err;
     }
   }
 
@@ -23,6 +24,7 @@ export class UsersResolver {
       return this.usersService.findOne(id);
     } catch (err) {
       console.log('Error on finding user', err);
+      return err;
     }
   }
 
@@ -34,6 +36,7 @@ export class UsersResolver {
       return user;
     } catch (err) {
       console.log('Error on creating user', err);
+      return err;
     }
   }
 
@@ -48,6 +51,7 @@ export class UsersResolver {
       return user;
     } catch (err) {
       console.log('Error on updating user', err);
+      return err;
     }
   }
 
@@ -59,6 +63,7 @@ export class UsersResolver {
       return id;
     } catch (err) {
       console.log('Error on deleting user', err);
+      return err;
     }
   }
 
@@ -70,6 +75,7 @@ export class UsersResolver {
       return id;
     } catch (err) {
       console.log('Error on restoring user', err);
+      return err;
     }
   }
 }

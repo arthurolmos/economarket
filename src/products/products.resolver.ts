@@ -14,6 +14,7 @@ export class ProductsResolver {
       return this.productsService.findAll();
     } catch (err) {
       console.log('Error on finding all product', err);
+      return err;
     }
   }
 
@@ -23,6 +24,7 @@ export class ProductsResolver {
       return this.productsService.findAllByUser(userId);
     } catch (err) {
       console.log('Error on finding all product', err);
+      return err;
     }
   }
 
@@ -32,6 +34,7 @@ export class ProductsResolver {
       return this.productsService.findOne(id);
     } catch (err) {
       console.log('Error on finding product', err);
+      return err;
     }
   }
 
@@ -46,6 +49,7 @@ export class ProductsResolver {
       return product;
     } catch (err) {
       console.log('Error on creating product', err);
+      return err;
     }
   }
 
@@ -60,6 +64,7 @@ export class ProductsResolver {
       return product;
     } catch (err) {
       console.log('Error on updating product', err);
+      return err;
     }
   }
 
@@ -71,6 +76,7 @@ export class ProductsResolver {
       return id;
     } catch (err) {
       console.log('Error on deleting product', err);
+      return err;
     }
   }
 }

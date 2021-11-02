@@ -19,6 +19,7 @@ export class NotificationsResolver {
       return this.notificationsService.findAll();
     } catch (err) {
       console.log('Error on finding all notification', err);
+      return err;
     }
   }
 
@@ -28,6 +29,7 @@ export class NotificationsResolver {
       return this.notificationsService.findAllByUser(userId);
     } catch (err) {
       console.log('Error on finding all notification', err);
+      return err;
     }
   }
 
@@ -37,6 +39,7 @@ export class NotificationsResolver {
       return this.notificationsService.findOne(id);
     } catch (err) {
       console.log('Error on finding notification', err);
+      return err;
     }
   }
 
@@ -59,6 +62,7 @@ export class NotificationsResolver {
       return notification;
     } catch (err) {
       console.log('Error on creating notification', err);
+      return err;
     }
   }
 
@@ -102,6 +106,7 @@ export class NotificationsResolver {
       return notification;
     } catch (err) {
       console.log('Error on updating notification', err);
+      return err;
     }
   }
 
@@ -113,6 +118,7 @@ export class NotificationsResolver {
       return id;
     } catch (err) {
       console.log('Error on deleting notification', err);
+      return err;
     }
   }
 
@@ -124,6 +130,7 @@ export class NotificationsResolver {
       return 'ok';
     } catch (err) {
       console.log('Error on deleting notification', err);
+      return err;
     }
   }
 }

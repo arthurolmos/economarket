@@ -1,8 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UsersService } from '../users/users.service';
 import {
   MockPushNotificationToken,
-  MockUsersService,
   MockPushNotificationTokensService,
 } from '../../test/mocks';
 import { PushNotificationToken } from './push-notification-token.entity';
@@ -18,10 +16,6 @@ describe('PushNotificationTokensResolver', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PushNotificationTokensResolver,
-        {
-          provide: UsersService,
-          useValue: MockUsersService,
-        },
         {
           provide: PushNotificationTokensService,
           useValue: service,

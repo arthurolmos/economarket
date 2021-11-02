@@ -1,5 +1,5 @@
 import { Product } from '../../../src/products/product.entity';
-import { MockUser } from './MockUser';
+import { MockUser } from './user.mock';
 import * as faker from 'faker';
 import { User } from '../../../src/users/user.entity';
 

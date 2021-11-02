@@ -1,5 +1,4 @@
 import { Args, Mutation, Resolver, Query } from '@nestjs/graphql';
-import { UsersService } from '../users/users.service';
 import { PushNotificationToken } from './push-notification-token.entity';
 import { PushNotificationTokensService } from './push-notification-tokens.service';
 
@@ -7,7 +6,6 @@ import { PushNotificationTokensService } from './push-notification-tokens.servic
 export class PushNotificationTokensResolver {
   constructor(
     private pushNotificationTokensService: PushNotificationTokensService,
-    private usersService: UsersService,
   ) {}
 
   @Query(() => [PushNotificationToken], { name: 'pushNotificationTokens' })
@@ -16,6 +14,7 @@ export class PushNotificationTokensResolver {
       return this.pushNotificationTokensService.findAll();
     } catch (err) {
       console.log('Error on finding all push notification manager', err);
+      return err;
     }
   }
 
@@ -27,6 +26,7 @@ export class PushNotificationTokensResolver {
       return this.pushNotificationTokensService.findAllByUser(userId);
     } catch (err) {
       console.log('Error on finding all push notification manager', err);
+      return err;
     }
   }
 
@@ -36,6 +36,7 @@ export class PushNotificationTokensResolver {
       return this.pushNotificationTokensService.findOne(id);
     } catch (err) {
       console.log('Error on finding push notification manager', err);
+      return err;
     }
   }
 
@@ -51,6 +52,7 @@ export class PushNotificationTokensResolver {
       return pushNotificationToken;
     } catch (err) {
       console.log('Error on creating push notification manager', err);
+      return err;
     }
   }
 
@@ -73,6 +75,7 @@ export class PushNotificationTokensResolver {
       return 'ok';
     } catch (err) {
       console.log('Error on deleting push notification manager', err);
+      return err;
     }
   }
 }

@@ -14,6 +14,7 @@ export class ListProductsResolver {
       return this.listProductsService.findAll();
     } catch (err) {
       console.log('Error on finding all list item', err);
+      return err;
     }
   }
 
@@ -25,6 +26,7 @@ export class ListProductsResolver {
       return this.listProductsService.findAllByShoppingList(shoppingListId);
     } catch (err) {
       console.log('Error on finding all list Products by Shopping List', err);
+      return err;
     }
   }
 
@@ -34,6 +36,7 @@ export class ListProductsResolver {
       return this.listProductsService.findOne(id);
     } catch (err) {
       console.log('Error on finding shopping list product', err);
+      return err;
     }
   }
 
@@ -46,6 +49,7 @@ export class ListProductsResolver {
       return this.listProductsService.findOneByShoppingList(id, shoppingListId);
     } catch (err) {
       console.log('Error on finding one list Products by Shopping List', err);
+      return err;
     }
   }
 
@@ -63,6 +67,7 @@ export class ListProductsResolver {
       return listProduct;
     } catch (err) {
       console.log('Error on creating list item', err);
+      return err;
     }
   }
 
@@ -82,6 +87,7 @@ export class ListProductsResolver {
       return listProduct;
     } catch (err) {
       console.log('Error on updating shopping list product', err);
+      return err;
     }
   }
 
@@ -96,6 +102,7 @@ export class ListProductsResolver {
       return id;
     } catch (err) {
       console.log('Error on deleting shopping list product', err);
+      return err;
     }
   }
 }

@@ -1,15 +1,16 @@
 export * from './MockRepository';
-export * from './models/MockUser';
-export * from './models/MockShoppingList';
-export * from './models/MockProduct';
-export * from './models/MockNotification';
-export * from './models/MockListProduct';
-export * from './models/MockPushNotificationToken';
+export * from './entities/user.mock';
+export * from './entities/shopping-list.mock';
+export * from './entities/product.mock';
+export * from './entities/notification.mock';
+export * from './entities/list-product.mock';
+export * from './entities/push-notification-token.mock';
 
-export * from './services/MockUsersService';
-export * from './services/MockShoppingListsService';
-export * from './services/MockListProductsService';
-export * from './services/MockPushNotificationTokensService';
-export * from './services/MockProductsService';
+export * from './services/users.service.mock';
+export * from './services/shopping-lists.service.mock';
+export * from './services/list-products.service.mock';
+export * from './services/push-notification-tokens.service.mock';
+export * from './services/products.service.mock';
+export * from './services/auth.service.mock';
 
 export * from './MockConnection';

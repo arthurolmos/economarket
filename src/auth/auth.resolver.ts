@@ -13,16 +13,26 @@ export class AuthResolver {
   constructor(private authService: AuthService) {}
 
   @Mutation(() => AuthResult)
-  login(
+  async login(
     @Args('username') username: string,
     @Args('password') password: string,
   ) {
-    return this.authService.login(username, password);
+    try {
+      return this.authService.validateUser(username, password);
+    } catch (err) {
+      console.log(err);
+      return err;
+    }
   }
 
   @Mutation(() => AuthResult)
   register(@Args('data') data: UserCreateInput) {
-    return this.authService.register(data);
+    try {
+      return this.authService.register(data);
+    } catch (err) {
+      console.log(err);
+      return err;
+    }
   }
 
   @Query(() => User)

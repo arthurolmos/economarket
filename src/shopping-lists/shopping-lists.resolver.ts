@@ -14,6 +14,7 @@ export class ShoppingListsResolver {
       return this.shoppingListsService.findAll();
     } catch (err) {
       console.log('Error on finding all shopping list', err);
+      return err;
     }
   }
 
@@ -23,6 +24,7 @@ export class ShoppingListsResolver {
       return this.shoppingListsService.findAllByUser(userId);
     } catch (err) {
       console.log('Error on finding all shoppingList', err);
+      return err;
     }
   }
 
@@ -32,6 +34,7 @@ export class ShoppingListsResolver {
       return this.shoppingListsService.findOne(id);
     } catch (err) {
       console.log('Error on finding shopping list', err);
+      return err;
     }
   }
 
@@ -44,6 +47,7 @@ export class ShoppingListsResolver {
       return this.shoppingListsService.findOneByUser(id, userId);
     } catch (err) {
       console.log('Error on finding shopping list', err);
+      return err;
     }
   }
 
@@ -58,6 +62,7 @@ export class ShoppingListsResolver {
       return shoppingList;
     } catch (err) {
       console.log('Error on creating shopping list', err);
+      return err;
     }
   }
 
@@ -72,6 +77,7 @@ export class ShoppingListsResolver {
       return shoppingList;
     } catch (err) {
       console.log('Error on updating shopping list', err);
+      return err;
     }
   }
 
@@ -85,6 +91,7 @@ export class ShoppingListsResolver {
       return shoppingList;
     } catch (err) {
       console.log('Error on updating shopping list', err);
+      return err;
     }
   }
 
@@ -98,6 +105,7 @@ export class ShoppingListsResolver {
       return shoppingList;
     } catch (err) {
       console.log('Error on updating shopping list', err);
+      return err;
     }
   }
 
@@ -117,6 +125,7 @@ export class ShoppingListsResolver {
       return shoppingList;
     } catch (err) {
       console.log('Error on adding shared users from shopping list', err);
+      return err;
     }
   }
 
@@ -135,6 +144,7 @@ export class ShoppingListsResolver {
       return shoppingList;
     } catch (err) {
       console.log('Error on removing shared users from shopping list', err);
+      return err;
     }
   }
 
@@ -153,6 +163,7 @@ export class ShoppingListsResolver {
       return shoppingList;
     } catch (err) {
       console.log('Error on removing shared users from shopping list', err);
+      return err;
     }
   }
 
@@ -164,6 +175,7 @@ export class ShoppingListsResolver {
       return id;
     } catch (err) {
       console.log('Error on deleting shopping list', err);
+      return err;
     }
   }
 
@@ -187,6 +199,7 @@ export class ShoppingListsResolver {
       return shoppingList;
     } catch (err) {
       console.log('Error on creating shopping list', err);
+      return err;
     }
   }
 
@@ -208,6 +221,7 @@ export class ShoppingListsResolver {
       return shoppingList;
     } catch (err) {
       console.log('Error on creating shopping list', err);
+      return err;
     }
   }
 }

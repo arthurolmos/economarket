@@ -1,18 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthResolver } from './auth.resolver';
 import { JwtModule } from '@nestjs/jwt';
-import { getRepositoryToken } from '@nestjs/typeorm';
 import { User } from '../users/user.entity';
 import { AuthService } from './auth.service';
-import { UsersService } from '../users/users.service';
 import { UserCreateInput } from '../users/inputs/user-create.input';
-import { MockRepository, MockUser } from '../../test/mocks';
+import { MockAuthService, MockUser } from '../../test/mocks';
 import * as faker from 'faker';
 
 describe('AuthResolver', () => {
   let resolver: AuthResolver;
 
-  const mockUsersRepository = new MockRepository();
+  const service = new MockAuthService();
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -22,16 +20,10 @@ describe('AuthResolver', () => {
         }),
       ],
       providers: [
-        AuthService,
         AuthResolver,
         {
-          provide: UsersService,
-          useClass: UsersService,
-        },
-
-        {
-          provide: getRepositoryToken(User),
-          useValue: mockUsersRepository,
+          provide: AuthService,
+          useValue: service,
         },
       ],
     }).compile();
@@ -52,12 +44,15 @@ describe('AuthResolver', () => {
     });
 
     it('should login an User', async () => {
-      mockUsersRepository.findOne.mockReturnValue(mockUser);
+      service.validateUser.mockReturnValue({
+        user: mockUser,
+        token: 'jwtToken',
+      });
       const { token, user } = await resolver.login(mockUser.email, password);
 
       expect(token).toBeDefined();
       expect(user).toBeDefined();
-      expect(mockUsersRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(service.validateUser).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -83,15 +78,16 @@ describe('AuthResolver', () => {
     });
 
     it('should register a new User', async () => {
-      mockUsersRepository.findOne.mockReturnValue(null);
-      mockUsersRepository.save.mockReturnValue(mockUser);
+      service.register.mockReturnValue({
+        user: mockUser,
+        token: 'jwtToken',
+      });
 
       const { user, token } = await resolver.register(mockData);
 
       expect(user).toBeDefined();
       expect(token).toBeDefined();
-      expect(mockUsersRepository.findOne).toHaveBeenCalledTimes(1);
-      expect(mockUsersRepository.save).toHaveBeenCalledTimes(1);
+      expect(service.register).toHaveBeenCalledTimes(1);
     });
   });
 });
