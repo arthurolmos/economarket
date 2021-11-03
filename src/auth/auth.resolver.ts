@@ -1,4 +1,4 @@
-import { UseGuards } from '@nestjs/common';
+import { UnauthorizedException, UseGuards } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { UserCreateInput } from '../users/inputs/user-create.input';
 import { User } from '../users/user.entity';
@@ -21,7 +21,7 @@ export class AuthResolver {
       return this.authService.validateUser(username, password);
     } catch (err) {
       console.log(err);
-      return err;
+      throw new UnauthorizedException('Usuário ou senha incorretos!');
     }
   }
 
@@ -31,7 +31,7 @@ export class AuthResolver {
       return this.authService.register(data);
     } catch (err) {
       console.log(err);
-      return err;
+      throw err;
     }
   }
 

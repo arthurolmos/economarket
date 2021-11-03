@@ -14,7 +14,7 @@ export class PushNotificationTokensResolver {
       return this.pushNotificationTokensService.findAll();
     } catch (err) {
       console.log('Error on finding all push notification manager', err);
-      return err;
+      throw err;
     }
   }
 
@@ -26,7 +26,7 @@ export class PushNotificationTokensResolver {
       return this.pushNotificationTokensService.findAllByUser(userId);
     } catch (err) {
       console.log('Error on finding all push notification manager', err);
-      return err;
+      throw err;
     }
   }
 
@@ -36,7 +36,7 @@ export class PushNotificationTokensResolver {
       return this.pushNotificationTokensService.findOne(id);
     } catch (err) {
       console.log('Error on finding push notification manager', err);
-      return err;
+      throw err;
     }
   }
 
@@ -52,7 +52,7 @@ export class PushNotificationTokensResolver {
       return pushNotificationToken;
     } catch (err) {
       console.log('Error on creating push notification manager', err);
-      return err;
+      throw err;
     }
   }
 
@@ -75,7 +75,7 @@ export class PushNotificationTokensResolver {
       return 'ok';
     } catch (err) {
       console.log('Error on deleting push notification manager', err);
-      return err;
+      throw err;
     }
   }
 }
